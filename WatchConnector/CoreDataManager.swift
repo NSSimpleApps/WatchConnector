@@ -19,6 +19,13 @@ class CoreDataManager: NSObject {
         return URLs.last!
     }()
     
+    var persistentStoreURL: NSURL!
+    
+    var defaultPersistentStoreURL: NSURL {
+        
+        return self.applicationDocumentsDirectory.URLByAppendingPathComponent("WatchConnector.sqlite")
+    }
+    
     lazy var managedObjectModel: NSManagedObjectModel = {
         
         let modelURL = NSBundle.mainBundle().URLForResource("WatchConnector", withExtension: "momd")!
@@ -30,13 +37,11 @@ class CoreDataManager: NSObject {
         
         let coordinator = NSPersistentStoreCoordinator(managedObjectModel: self.managedObjectModel)
         
-        let url = self.applicationDocumentsDirectory.URLByAppendingPathComponent("WatchConnector.sqlite")
-        
         var failureReason = "There was an error creating or loading the application's saved data."
         
         do {
             
-            try coordinator.addPersistentStoreWithType(NSSQLiteStoreType, configuration: nil, URL: url, options: nil)
+            try coordinator.addPersistentStoreWithType(NSSQLiteStoreType, configuration: nil, URL: self.persistentStoreURL, options: nil)
             
         } catch let error as NSError {
             // Report any error we got.
@@ -83,7 +88,7 @@ class CoreDataManager: NSObject {
         
         super.init()
         
-        
+        self.persistentStoreURL = self.defaultPersistentStoreURL
     }
     
     func saveContext () {
@@ -102,4 +107,83 @@ class CoreDataManager: NSObject {
             }
         }
     }
+}
+
+extension CoreDataManager { // for request all entities
+    
+    func initWatchInteraction() {
+        
+        WatchConnector.shared.listenToReplyDataBlock({ (data: NSData, description: String?) -> NSData in
+            
+            let backgroundContext = NSManagedObjectContext(concurrencyType: .PrivateQueueConcurrencyType)
+            backgroundContext.persistentStoreCoordinator = self.persistentStoreCoordinator
+            
+            
+            let fetchRequest = NSFetchRequest(entityName: String(Note))
+            fetchRequest.propertiesToFetch = ["image", "url"]
+            
+            var images: [NSData] = []
+            var urls: [String] = []
+            var ids: [String] = []
+            
+            do {
+                
+                let notes = try backgroundContext.executeFetchRequest(fetchRequest) as! [Note]
+                
+                for note in notes {
+                    
+                    urls.append(note.url ?? "")
+                    images.append(note.image ?? NSData())
+                    ids.append(note.objectID.URIRepresentation().absoluteString)
+                }
+                
+            } catch let error as NSError {
+                
+                print(error)
+            }
+            
+            return NSKeyedArchiver.archivedDataWithRootObject(["Images": images, "URLs": urls, "IDs": ids])
+            
+            },
+            withIdentifier: "RequestData")
+    }
+    
+    func initDeleteEntity() {
+        
+        WatchConnector.shared.listenToMessageBlock({ (message: WCMessageType) -> Void in
+            
+            let id = message["id"] as! String
+            
+            let backgroundContext = NSManagedObjectContext(concurrencyType: .PrivateQueueConcurrencyType)
+            backgroundContext.name = "WatchContext"
+            backgroundContext.persistentStoreCoordinator = self.persistentStoreCoordinator
+            
+            if let managedObjectID = self.persistentStoreCoordinator.managedObjectIDForURIRepresentation(NSURL(string: id)!), let object = backgroundContext.objectWithID(managedObjectID) as? Note {
+                
+                backgroundContext.deleteObject(object)
+                do {
+                    
+                    try backgroundContext.save()
+                    
+                } catch let error as NSError {
+                    
+                    print(error)
+                }
+            }
+            
+            },
+            withIdentifier: "RemoveNote")
+    }
+    
+    func initFileRequest() {
+        
+        WatchConnector.shared.listenToMessageBlock({ (message: WCMessageType) -> Void in
+            
+            print(WatchConnector.shared.transferFile(self.persistentStoreURL,
+                metadata: nil))
+            
+            },
+            withIdentifier: "FileRequest")
+    }
+    
 }

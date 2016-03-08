@@ -9,46 +9,45 @@
 import Foundation
 import WatchConnectivity
 
-private let CMMessageIdentifier = "CMMessageIdentifier"
-private let CMDataDescription = "CMDataDescription"
-private let CMDataIdentifier = "CMDataIdentifier"
-private let CMData = "CMData"
+private let WCMessageIdentifier = "WCMessageIdentifier"
+private let WCDataDescription = "WCDataDescription"
+private let WCDataIdentifier = "WCDataIdentifier"
+private let WCData = "WCData"
 
-let ApplicationContextDidChange = "ApplicationContextDidChange"
-let DidReceiveUserInfo = "DidReceiveUserInfo"
+public let WCApplicationContextDidChange = "WCApplicationContextDidChange"
+public let WCDidReceiveUserInfo = "WCDidReceiveUserInfo"
 
-let SessionReachabilityDidChange = "SessionReachabilityDidChange"
-let DidReceiveFileNotification = "DidReceiveFileNotification"
-
-
-typealias MessageType = [String : AnyObject]
-
-typealias VoidMessageBlock = MessageType -> Void
-typealias ReplyMessageBlock = MessageType -> MessageType
-
-typealias VoidDataBlock = (NSData, String?) -> Void
-typealias ReplyDataBlock = (NSData, String?) -> NSData
+public let WCSessionReachabilityDidChange = "WCSessionReachabilityDidChange"
+public let WCDidReceiveFileNotification = "WCDidReceiveFileNotification"
 
 
-typealias ErrorBlock = NSError -> Void
+public typealias WCMessageType = [String : AnyObject]
+
+public typealias WCMessageBlock = WCMessageType -> Void
+public typealias WCReplyMessageBlock = WCMessageType -> WCMessageType
+
+public typealias WCDataBlock = (NSData, String?) -> Void
+public typealias WCReplyDataBlock = (NSData, String?) -> NSData
+
+public typealias WCErrorBlock = NSError -> Void
 
 
 @available(iOS 9.0, watchOS 2.0, *)
 
-class WatchConnector: NSObject, WCSessionDelegate {
+public class WatchConnector: NSObject, WCSessionDelegate {
     
     private var session: WCSession?
     
-    private var voidMessageBlocks: [String : VoidMessageBlock] = [:]
-    private var replyMessageBlocks: [String : ReplyMessageBlock] = [:]
+    private var messageBlocks: [String: WCMessageBlock] = [:]
+    private var replyMessageBlocks: [String: WCReplyMessageBlock] = [:]
     
-    private var voidDataBlocks: [String : VoidDataBlock] = [:]
-    private var replyDataBlocks: [String : ReplyDataBlock] = [:]
+    private var dataBlocks: [String: WCDataBlock] = [:]
+    private var replyDataBlocks: [String: WCReplyDataBlock] = [:]
     
-    private let q = dispatch_queue_create("ns.simple.apps", DISPATCH_QUEUE_CONCURRENT)
+    private let accessQueue = dispatch_queue_create("ns.simple.apps", DISPATCH_QUEUE_CONCURRENT)
     
     
-    class var shared: WatchConnector {
+    public class var shared: WatchConnector {
         
         struct Static {
             
@@ -68,9 +67,9 @@ class WatchConnector: NSObject, WCSessionDelegate {
         super.init()
     }
     
-    private(set) var isActivated: Bool = false
+    public private(set) var isActivated: Bool = false
     
-    func activateSession() -> Bool {
+    public func activateSession() -> Bool {
         
         self.isActivated = WCSession.isSupported()
         
@@ -79,19 +78,14 @@ class WatchConnector: NSObject, WCSessionDelegate {
             self.session = WCSession.defaultSession()
             self.session?.delegate = self
             self.session?.activateSession()
-            
-            self.applicationContext = self.session?.applicationContext ?? [:]
         }
         return self.isActivated
     }
     
-    var receivedApplicationContext: [String: AnyObject] {
+    public var receivedApplicationContext: [String: AnyObject] {
         
-        //return self.validSession?.receivedApplicationContext ?? [:]
-        return self.session?.receivedApplicationContext ?? [:]
+        return self.validSession?.receivedApplicationContext ?? [:]
     }
-    
-    private(set) var applicationContext: [String : AnyObject] = [:]
     
     private var reachableSession: WCSession? {
         
@@ -99,7 +93,7 @@ class WatchConnector: NSObject, WCSessionDelegate {
             
             return validSession
         }
-        NSLog("!!!!! WCSession is not reachable")
+        NSLog("WCSession is not reachable")
         
         return nil
     }
@@ -112,341 +106,329 @@ class WatchConnector: NSObject, WCSessionDelegate {
                 
                 guard session.paired else {
                     
-                    NSLog("!!!!! WCSession is not paired")
+                    NSLog("WCSession is not paired")
                     return nil
                 }
                 guard session.watchAppInstalled else {
                     
-                    NSLog("!!!!! Watch application is not installed")
+                    NSLog("Watch application is not installed")
                     return nil
                 }
             #endif
             
             guard session.delegate != nil else {
                 
-                NSLog("!!!!! WCSession delegate is nil")
+                NSLog("WCSession delegate is nil")
                 return nil
             }
             
             guard session.delegate!.isEqual(self) else {
                 
-                NSLog("!!!!! WCSession delegate is not equal to ConnectivityManager")
+                NSLog("WCSession delegate is not equal to ConnectivityManager")
                 return nil
             }
             
             return session
         }
-        NSLog("!!!!! WCSession is not activated")
+        NSLog("WCSession is not activated")
         
         return nil
     }
     
-    func updateApplicationContext(context: [String : AnyObject]) throws {
+    public func updateApplicationContext(context: [String : AnyObject]) throws {
         
-        dispatch_barrier_sync(self.q) { () -> Void in
-            
-            for (key, value) in context {
-                
-                self.applicationContext.updateValue(value, forKey: key)
-            }
-        }
-        
-        //try self.validSession?.updateApplicationContext(context)
-        try self.session?.updateApplicationContext(context)
+        try self.validSession?.updateApplicationContext(context)
     }
     
-    var isReachable: Bool {
+    public var isReachable: Bool {
         
         return self.reachableSession != nil
     }
     
-    func addVoidMessageBlock(voidMessageBlock: VoidMessageBlock, identifier: String) {
+    public func listenToMessageBlock(messageBlock: WCMessageBlock, withIdentifier identifier: String) {
         
-        dispatch_barrier_async(self.q) { () -> Void in
+        dispatch_barrier_async(self.accessQueue) { () -> Void in
             
-            self.voidMessageBlocks[identifier] = voidMessageBlock
+            self.messageBlocks[identifier] = messageBlock
         }
     }
     
-    func addReplyMessageBlock(replyMessageBlock: ReplyMessageBlock, identifier: String) {
+    public func listenToReplyMessageBlock(replyMessageBlock: WCReplyMessageBlock, withIdentifier identifier: String) {
         
-        dispatch_barrier_async(self.q) { () -> Void in
+        dispatch_barrier_async(self.accessQueue) { () -> Void in
             
             self.replyMessageBlocks[identifier] = replyMessageBlock
         }
     }
     
-    func addVoidDataBlock(voidDataBlock: VoidDataBlock, identifier: String) {
+    public func listenToDataBlock(dataBlock: WCDataBlock, withIdentifier identifier: String) {
         
-        dispatch_barrier_async(self.q) { () -> Void in
+        dispatch_barrier_async(self.accessQueue) { () -> Void in
             
-            self.voidDataBlocks[identifier] = voidDataBlock
+            self.dataBlocks[identifier] = dataBlock
         }
     }
     
-    func addReplyDataBlock(replyDataBlock: ReplyDataBlock, identifier: String) {
+    public func listenToReplyDataBlock(replyDataBlock: WCReplyDataBlock, withIdentifier identifier: String) {
         
-        dispatch_barrier_async(self.q) { () -> Void in
+        dispatch_barrier_async(self.accessQueue) { () -> Void in
             
             self.replyDataBlocks[identifier] = replyDataBlock
         }
     }
     
-    func removeVoidMessageBlockWithIdentifier(identifier: String) {
+    public func removeMessageBlockWithIdentifier(identifier: String) {
         
-        dispatch_barrier_async(self.q) { () -> Void in
+        dispatch_barrier_async(self.accessQueue) { () -> Void in
             
-            self.voidMessageBlocks[identifier] = nil
+            self.messageBlocks[identifier] = nil
         }
     }
     
-    func removeReplyMessageBlockWithIdentifier(identifier: String) {
+    public func removeReplyMessageBlockWithIdentifier(identifier: String) {
         
-        dispatch_barrier_async(self.q) { () -> Void in
+        dispatch_barrier_async(self.accessQueue) { () -> Void in
             
             self.replyMessageBlocks[identifier] = nil
         }
     }
     
-    func removeVoidDataBlockWithIdentifier(identifier: String) {
+    public func removeDataBlockWithIdentifier(identifier: String) {
         
-        dispatch_barrier_async(self.q) { () -> Void in
+        dispatch_barrier_async(self.accessQueue) { () -> Void in
             
-            self.voidDataBlocks[identifier] = nil
+            self.dataBlocks[identifier] = nil
         }
     }
     
-    func removeReplyDataBlockWithIdentifier(identifier: String) {
+    public func removeReplyDataBlockWithIdentifier(identifier: String) {
         
-        dispatch_barrier_async(self.q) { () -> Void in
+        dispatch_barrier_async(self.accessQueue) { () -> Void in
             
             self.replyDataBlocks[identifier] = nil
         }
     }
     
-    func sendMessage(var message: MessageType, identifier: String, replyBlock: VoidMessageBlock, errorBlock: ErrorBlock?) {
+    public func sendMessage(var message: WCMessageType, withIdentifier identifier: String, replyBlock: WCMessageBlock, errorBlock: WCErrorBlock?) {
         
-        message[CMMessageIdentifier] = identifier
+        message[WCMessageIdentifier] = identifier
         
-        self.reachableSession?.sendMessage(message, replyHandler: { (reply: [String : AnyObject]) -> Void in
+        self.reachableSession?.sendMessage(message, replyHandler: { (reply: [String: AnyObject]) -> Void in
             
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                
-                replyBlock(reply)
-            })
+            replyBlock(reply)
+            
             },
             errorHandler: { (error: NSError) -> Void in
-                
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
                     
-                    errorBlock?(error)
-                })
+                errorBlock?(error)
         })
     }
     
-    func sendMessage(var message: MessageType, identifier: String, errorBlock: ErrorBlock?) {
+    public func sendMessage(var message: WCMessageType, withIdentifier identifier: String, errorBlock: WCErrorBlock?) {
         
-        message[CMMessageIdentifier] = identifier
+        message[WCMessageIdentifier] = identifier
         
         self.reachableSession?.sendMessage(message, replyHandler: nil, errorHandler: { (error: NSError) -> Void in
-            
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 
-                errorBlock?(error)
-            })
+            errorBlock?(error)
         })
     }
     
-    func sendData(data: NSData, identifier: String, description: String, errorBlock: ErrorBlock?) {
+    public func sendData(data: NSData, withIdentifier identifier: String, description: String, errorBlock: WCErrorBlock?) {
         
-        let dataToSend = NSKeyedArchiver.archivedDataWithRootObject([CMDataIdentifier: identifier, CMDataDescription: description, CMData: data])
+        let dataToSend = NSKeyedArchiver.archivedDataWithRootObject([WCDataIdentifier: identifier, WCDataDescription: description, WCData: data])
         
         self.reachableSession?.sendMessageData(dataToSend, replyHandler: nil, errorHandler: { (error: NSError) -> Void in
-            
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 
-                errorBlock?(error)
-            })
+            errorBlock?(error)
         })
     }
     
-    func sendData(data: NSData, identifier: String, description: String, replyBlock: VoidDataBlock, errorBlock: ErrorBlock?) {
+    public func sendData(data: NSData, withIdentifier identifier: String, description: String, replyBlock: WCDataBlock, errorBlock: WCErrorBlock?) {
         
-        let dataToSend = NSKeyedArchiver.archivedDataWithRootObject([CMDataIdentifier: identifier, CMDataDescription: description, CMData: data])
+        let dataToSend = NSKeyedArchiver.archivedDataWithRootObject([WCDataIdentifier: identifier, WCDataDescription: description, WCData: data])
         
         self.reachableSession?.sendMessageData(dataToSend, replyHandler: { (replyData: NSData) -> Void in
             
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                
-                replyBlock(replyData, nil)
-            })
+            replyBlock(replyData, nil)
             },
             errorHandler: { (error: NSError) -> Void in
-                
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
                     
-                    errorBlock?(error)
-                })
+            errorBlock?(error)
         })
     }
     
-    func transferFile(file: NSURL, metadata: [String : AnyObject]?) -> WCSessionFileTransfer? {
+    public func transferFile(file: NSURL, metadata: [String : AnyObject]?) -> WCSessionFileTransfer? {
         
-        return self.reachableSession?.transferFile(file, metadata: metadata)
+        return self.validSession?.transferFile(file, metadata: metadata)
     }
     
     // WCSessionDelegate
     
-    func sessionReachabilityDidChange(session: WCSession) {
+    #if os(iOS)
+    public func sessionWatchStateDidChange(session: WCSession) {
+        
+        
+    }
+    #endif
+    
+    public func sessionReachabilityDidChange(session: WCSession) {
         
         let reachable = session.reachable
         
         dispatch_async(dispatch_get_main_queue()) { () -> Void in
             
-            NSNotificationCenter.defaultCenter().postNotificationName(SessionReachabilityDidChange, object: reachable, userInfo: nil)
+            NSNotificationCenter.defaultCenter().postNotificationName(WCSessionReachabilityDidChange, object: self, userInfo: ["reachable": reachable])
         }
     }
     
-    func session(session: WCSession, var didReceiveMessage message: [String : AnyObject]) {
+    public func session(session: WCSession, var didReceiveMessage message: [String: AnyObject]) {
         
-        let identifier = message[CMMessageIdentifier] as! String
+        let identifier = message[WCMessageIdentifier] as! String
         
-        message[CMMessageIdentifier] = nil
+        message[WCMessageIdentifier] = nil
         
-        dispatch_async(self.q) { () -> Void in
+        if let messageBlock = self.messageBlockForIdentifier(identifier) {
             
-            if let voidMessageBlock = self.voidMessageBlocks[identifier] {
-                
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                    
-                    voidMessageBlock(message)
-                })
-            }
+            messageBlock(message)
         }
     }
     
-    func session(session: WCSession, var didReceiveMessage message: [String : AnyObject], replyHandler: ([String : AnyObject]) -> Void) {
+    public func session(session: WCSession, var didReceiveMessage message: [String : AnyObject], replyHandler: ([String: AnyObject]) -> Void) {
         
-        let identifier = message[CMMessageIdentifier] as! String
+        let identifier = message[WCMessageIdentifier] as! String
         
-        message[CMMessageIdentifier] = nil
+        message[WCMessageIdentifier] = nil
         
-        dispatch_async(self.q) { () -> Void in
+        if let replyMessageBlock = self.replyMessageBlockForIdentifier(identifier) {
             
-            if let replyMessageBlock = self.replyMessageBlocks[identifier] {
-                
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                    
-                    replyHandler(replyMessageBlock(message))
-                })
-            }
+            replyHandler(replyMessageBlock(message))
         }
     }
     
-    func session(session: WCSession, didReceiveMessageData messageData: NSData) {
+    public func session(session: WCSession, didReceiveMessageData messageData: NSData) {
         
         if let receivedObject = NSKeyedUnarchiver.unarchiveObjectWithData(messageData) {
             
-            let identifier = receivedObject[CMDataIdentifier] as! String
+            let identifier = receivedObject[WCDataIdentifier] as! String
             
-            dispatch_async(self.q) { () -> Void in
+            if let dataBlock = self.dataBlockForIdentifier(identifier) {
                 
-                if let voidDataBlock = self.voidDataBlocks[identifier] {
+                let description = receivedObject[WCDataDescription] as? String
                     
-                    let description = receivedObject[CMDataDescription] as? String
-                    
-                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                        
-                        voidDataBlock(receivedObject[CMData] as! NSData, description)
-                    })
-                }
+                dataBlock(receivedObject[WCData] as! NSData, description)
             }
             
         } else {
             
-            NSLog("!!!!! Cannot decode messageData")
+            NSLog("Cannot decode messageData")
         }
     }
     
-    func session(session: WCSession, didReceiveMessageData messageData: NSData, replyHandler: (NSData) -> Void) {
+    public func session(session: WCSession, didReceiveMessageData messageData: NSData, replyHandler: (NSData) -> Void) {
         
         if let receivedObject = NSKeyedUnarchiver.unarchiveObjectWithData(messageData) {
             
-            let identifier = receivedObject[CMDataIdentifier] as! String
+            let identifier = receivedObject[WCDataIdentifier] as! String
             
-            dispatch_async(self.q) { () -> Void in
+            if let replyDataBlock = self.replyDataBlockForIdentifier(identifier) {
                 
-                if let replyDataBlock = self.replyDataBlocks[identifier] {
+                let description = receivedObject[WCDataDescription] as? String
                     
-                    let description = receivedObject[CMDataDescription] as? String
-                    
-                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                        
-                        replyHandler(replyDataBlock(receivedObject[CMData] as! NSData, description))
-                    })
-                }
+                replyHandler(replyDataBlock(receivedObject[WCData] as! NSData, description))
             }
             
         } else {
             
-            NSLog("!!!!! Cannot decode messageData")
+            NSLog("Cannot decode messageData")
         }
     }
     
-    
-    func session(session: WCSession, didReceiveApplicationContext applicationContext: [String : AnyObject]) {
-        
-        dispatch_barrier_sync(self.q) { () -> Void in
-            
-            for (key, value) in applicationContext {
-                
-                self.applicationContext.updateValue(value, forKey: key)
-            }
-        }
+    public func session(session: WCSession, didReceiveApplicationContext applicationContext: [String : AnyObject]) {
         
         dispatch_async(dispatch_get_main_queue()) { () -> Void in
             
-            NSNotificationCenter.defaultCenter().postNotificationName(ApplicationContextDidChange, object: nil, userInfo: applicationContext)
+            NSNotificationCenter.defaultCenter().postNotificationName(WCApplicationContextDidChange, object: self, userInfo: applicationContext)
         }
     }
     
-    func session(session: WCSession, didReceiveUserInfo userInfo: [String : AnyObject]) {
-        
-        dispatch_barrier_sync(self.q) { () -> Void in
-            
-            self.userInfo = userInfo
-        }
+    public func session(session: WCSession, didReceiveUserInfo userInfo: [String: AnyObject]) {
         
         dispatch_async(dispatch_get_main_queue()) { () -> Void in
             
-            NSNotificationCenter.defaultCenter().postNotificationName(DidReceiveUserInfo, object: nil, userInfo: userInfo)
+            NSNotificationCenter.defaultCenter().postNotificationName(WCDidReceiveUserInfo, object: self, userInfo: userInfo)
         }
     }
     
-    func session(session: WCSession, didFinishFileTransfer fileTransfer: WCSessionFileTransfer, error: NSError?) {
+    public func session(session: WCSession, didFinishFileTransfer fileTransfer: WCSessionFileTransfer, error: NSError?) {
         
-        //print(__FUNCTION__)
+        
     }
     
     ///////////////////
-    var outstandingUserInfoTransfers: [WCSessionUserInfoTransfer]? {
+    public var outstandingUserInfoTransfers: [WCSessionUserInfoTransfer] {
         
-        return self.validSession?.outstandingUserInfoTransfers
+        return self.validSession?.outstandingUserInfoTransfers ?? []
     }
     
-    private(set) var userInfo: [String : AnyObject] = [:]
-    
-    func transferUserInfo(userInfo: [String : AnyObject]) -> WCSessionUserInfoTransfer? {
+    public func transferUserInfo(userInfo: [String: AnyObject]) -> WCSessionUserInfoTransfer? {
         
         return self.validSession?.transferUserInfo(userInfo)
     }
     
     deinit {
         
-        self.voidMessageBlocks.removeAll()
+        self.messageBlocks.removeAll()
         self.replyMessageBlocks.removeAll()
         
-        self.voidDataBlocks.removeAll()
+        self.dataBlocks.removeAll()
         self.replyDataBlocks.removeAll()
+    }
+}
+
+private extension WatchConnector { // access extension
+    
+    private func messageBlockForIdentifier(identifier: String) -> WCMessageBlock? {
+        
+        var messageBlock: WCMessageBlock?
+        
+        dispatch_sync(self.accessQueue) { () -> Void in
+            
+            messageBlock = self.messageBlocks[identifier]
+        }
+        return messageBlock
+    }
+    
+    private func replyMessageBlockForIdentifier(identifier: String) -> WCReplyMessageBlock? {
+        
+        var replyMessageBlock: WCReplyMessageBlock?
+        
+        dispatch_sync(self.accessQueue) { () -> Void in
+            
+            replyMessageBlock = self.replyMessageBlocks[identifier]
+        }
+        return replyMessageBlock
+    }
+    
+    private func dataBlockForIdentifier(identifier: String) -> WCDataBlock? {
+        
+        var dataBlock: WCDataBlock?
+        
+        dispatch_sync(self.accessQueue) { () -> Void in
+            
+            dataBlock = self.dataBlocks[identifier]
+        }
+        return dataBlock
+    }
+    
+    private func replyDataBlockForIdentifier(identifier: String) -> WCReplyDataBlock? {
+        
+        var replyDataBlock: WCReplyDataBlock?
+        
+        dispatch_sync(self.accessQueue) { () -> Void in
+            
+            replyDataBlock = self.replyDataBlocks[identifier]
+        }
+        return replyDataBlock
     }
 }

@@ -17,11 +17,29 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
         
         self.tableView.estimatedRowHeight = 80.0
         self.tableView.rowHeight = UITableViewAutomaticDimension
+        
+        NSNotificationCenter.defaultCenter().addObserver(self,
+            selector: "managedObjectContextDidSave:",
+            name: NSManagedObjectContextDidSaveNotification,
+            object: nil)
     }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    func managedObjectContextDidSave(notification: NSNotification) {
+        
+        let context = notification.object as! NSManagedObjectContext
+        
+        if context.name == "WatchContext" {
+            
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                
+                self.fetchedResultsController.managedObjectContext.mergeChangesFromContextDidSaveNotification(notification)
+            })
+        }
     }
     
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
@@ -91,12 +109,9 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
         let fetchRequest = NSFetchRequest()
         fetchRequest.entity = entity
         fetchRequest.fetchBatchSize = 20
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "timestamp", ascending: false)]
         
-        let sortDescriptor = NSSortDescriptor(key: "timestamp", ascending: false)
-        
-        fetchRequest.sortDescriptors = [sortDescriptor]
-        
-        _fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: managedObjectContext, sectionNameKeyPath: nil, cacheName: "Master")
+        _fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: managedObjectContext, sectionNameKeyPath: nil, cacheName: nil)
         _fetchedResultsController.delegate = self
         
         do {

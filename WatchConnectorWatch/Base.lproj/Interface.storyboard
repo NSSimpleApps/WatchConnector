@@ -10,9 +10,14 @@
             <objects>
                 <controller title="URLs" id="AgC-eL-Hgc" customClass="InterfaceController" customModule="WatchConnectorWatch" customModuleProvider="target">
                     <items>
+                        <button width="1" height="0.20000000000000001" alignment="center" title="Request" id="nd3-js-HNQ">
+                            <connections>
+                                <action selector="requestData" destination="AgC-eL-Hgc" id="YZI-2W-Nby"/>
+                            </connections>
+                        </button>
                         <table alignment="center" verticalAlignment="center" id="XX5-WL-45E">
                             <items>
-                                <tableRow identifier="TableRowController" id="TU3-bj-zfl" customClass="TableRowController" customModule="WatchConnector">
+                                <tableRow identifier="TableRowController" id="TU3-bj-zfl" customClass="TableRowController" customModule="WatchConnectorWatch_Extension">
                                     <group key="rootItem" width="1" height="0.0" alignment="left" layout="vertical" id="atP-Cl-YwG">
                                         <items>
                                             <imageView width="32" height="32" alignment="center" id="gbR-bx-KI6"/>
@@ -26,13 +31,54 @@
                                 </tableRow>
                             </items>
                         </table>
+                        <label alignment="center" verticalAlignment="center" hidden="YES" text="Label" textAlignment="center" numberOfLines="0" id="WWz-i4-XmA"/>
                     </items>
                     <connections>
+                        <outlet property="button" destination="nd3-js-HNQ" id="rxW-oc-rPE"/>
+                        <outlet property="errorLabel" destination="WWz-i4-XmA" id="XVp-mH-e06"/>
                         <outlet property="table" destination="XX5-WL-45E" id="VGQ-nC-hGT"/>
+                        <segue destination="a6R-iM-49E" kind="relationship" relationship="nextPage" id="ym8-BC-JFS"/>
                     </connections>
                 </controller>
             </objects>
             <point key="canvasLocation" x="220" y="345"/>
+        </scene>
+        <!--Table Controller-->
+        <scene sceneID="b96-x6-kJY">
+            <objects>
+                <controller id="a6R-iM-49E" customClass="TableController" customModule="WatchConnectorWatch_Extension">
+                    <items>
+                        <table alignment="center" verticalAlignment="center" id="Bpp-zH-6Lu">
+                            <items>
+                                <tableRow identifier="TableRowController" selectable="NO" id="aRH-Oc-sbl" customClass="TableRowController" customModule="WatchConnectorWatch_Extension">
+                                    <group key="rootItem" width="1" height="0.0" alignment="left" layout="vertical" id="vfx-Hi-owq">
+                                        <items>
+                                            <imageView width="32" height="32" alignment="center" id="qHu-za-1qY"/>
+                                            <label height="20" alignment="center" verticalAlignment="bottom" text="Label" id="aER-jX-whU"/>
+                                        </items>
+                                    </group>
+                                    <connections>
+                                        <outlet property="image" destination="qHu-za-1qY" id="aWd-db-P8K"/>
+                                        <outlet property="label" destination="aER-jX-whU" id="eh1-5h-mQ8"/>
+                                    </connections>
+                                </tableRow>
+                            </items>
+                        </table>
+                        <button width="1" height="0.20000000000000001" alignment="center" title="Request file" id="anj-oh-Cgj">
+                            <connections>
+                                <action selector="requestData" destination="a6R-iM-49E" id="cI9-nt-CrJ"/>
+                            </connections>
+                        </button>
+                        <label alignment="center" verticalAlignment="center" hidden="YES" text="Label" textAlignment="center" numberOfLines="0" id="PhG-gh-mvg"/>
+                    </items>
+                    <connections>
+                        <outlet property="button" destination="anj-oh-Cgj" id="dgT-Fl-bVC"/>
+                        <outlet property="errorLabel" destination="PhG-gh-mvg" id="vTW-w7-88X"/>
+                        <outlet property="table" destination="Bpp-zH-6Lu" id="Ccz-6s-qQe"/>
+                    </connections>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="434" y="346"/>
         </scene>
         <!--Static Notification Interface Controller-->
         <scene sceneID="AEw-b0-oYE">
