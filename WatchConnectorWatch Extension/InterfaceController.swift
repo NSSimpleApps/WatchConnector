@@ -8,7 +8,7 @@
 
 import WatchKit
 import Foundation
-
+import WatchConnectivity
 
 class InterfaceController: WKInterfaceController {
 
@@ -26,6 +26,8 @@ class InterfaceController: WKInterfaceController {
     override func awakeWithContext(context: AnyObject?) {
         
         super.awakeWithContext(context)
+        
+        //WCSessionDelegate
     }
 
     override func willActivate() {
@@ -35,7 +37,9 @@ class InterfaceController: WKInterfaceController {
         if self.rowIndex != nil {
             
             self.urls.removeAtIndex(self.rowIndex!)
-            table.removeRowsAtIndexes(NSIndexSet(index: self.rowIndex!))
+            self.images.removeAtIndex(self.rowIndex!)
+            self.ids.removeAtIndex(self.rowIndex!)
+            self.table.removeRowsAtIndexes(NSIndexSet(index: self.rowIndex!))
             
             self.rowIndex = nil
         }
@@ -50,7 +54,7 @@ class InterfaceController: WKInterfaceController {
         
         self.button.setEnabled(false)
         
-        WatchConnector.shared.sendData(NSData(), withIdentifier: "RequestData", description: "", replyBlock: { (data: NSData, description: String?) -> Void in
+        WatchConnector.shared.sendData(NSData(), withIdentifier: DataRequest, description: "", replyBlock: { (data: NSData, description: String?) -> Void in
             
             if let object = NSKeyedUnarchiver.unarchiveObjectWithData(data) {
                 
@@ -98,7 +102,7 @@ class InterfaceController: WKInterfaceController {
         let deleteAction = WKAlertAction(title: "Yes", style: .Default) { () -> Void in
             
             WatchConnector.shared.sendMessage(["id": self.ids[rowIndex]],
-                withIdentifier: "RemoveNote",
+                withIdentifier: RemoveNote,
                 errorBlock: { (error: NSError) -> Void in
                     
                     print(error)

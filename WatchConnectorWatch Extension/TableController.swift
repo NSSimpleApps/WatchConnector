@@ -8,6 +8,7 @@
 
 import WatchKit
 import Foundation
+import CoreData
 
 
 class TableController: WKInterfaceController {
@@ -29,9 +30,28 @@ class TableController: WKInterfaceController {
     
     func didReceiveFile(notification: NSNotification) {
         
-        self.button.setEnabled(true)
+        if let fileURL = notification.userInfo?[WCSessionFileURL] as? NSURL {
         
-        print(notification.userInfo)
+            dispatch_sync(dispatch_get_main_queue()) { () -> Void in
+                
+                CoreDataManager.shared.persistentStoreURL = fileURL
+                
+                let fetchRequest = NSFetchRequest(entityName: String(Note))
+                
+                let managedObjectContext = CoreDataManager.shared.managedObjectContext
+                
+                do {
+                    
+                    print(try managedObjectContext.executeFetchRequest(fetchRequest))
+                    
+                } catch let error as NSError {
+                    
+                    print(error)
+                }
+                
+                self.button.setEnabled(true)
+            }
+        }
     }
     
     override func willActivate() {
@@ -49,7 +69,7 @@ class TableController: WKInterfaceController {
         self.button.setEnabled(false)
         
         WatchConnector.shared.sendMessage([:],
-            withIdentifier: "FileRequest")
+            withIdentifier: FileRequest)
             { (error: NSError) -> Void in
                 
                 print(error)

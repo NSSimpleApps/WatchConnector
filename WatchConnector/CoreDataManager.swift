@@ -109,6 +109,7 @@ class CoreDataManager: NSObject {
     }
 }
 
+#if os(iOS)
 extension CoreDataManager { // for request all entities
     
     func initWatchInteraction() {
@@ -145,7 +146,7 @@ extension CoreDataManager { // for request all entities
             return NSKeyedArchiver.archivedDataWithRootObject(["Images": images, "URLs": urls, "IDs": ids])
             
             },
-            withIdentifier: "RequestData")
+            withIdentifier: DataRequest)
     }
     
     func initDeleteEntity() {
@@ -155,7 +156,7 @@ extension CoreDataManager { // for request all entities
             let id = message["id"] as! String
             
             let backgroundContext = NSManagedObjectContext(concurrencyType: .PrivateQueueConcurrencyType)
-            backgroundContext.name = "WatchContext"
+            backgroundContext.name = BackgroundContext
             backgroundContext.persistentStoreCoordinator = self.persistentStoreCoordinator
             
             if let managedObjectID = self.persistentStoreCoordinator.managedObjectIDForURIRepresentation(NSURL(string: id)!), let object = backgroundContext.objectWithID(managedObjectID) as? Note {
@@ -172,18 +173,19 @@ extension CoreDataManager { // for request all entities
             }
             
             },
-            withIdentifier: "RemoveNote")
+            withIdentifier: RemoveNote)
     }
     
     func initFileRequest() {
         
         WatchConnector.shared.listenToMessageBlock({ (message: WCMessageType) -> Void in
             
-            print(WatchConnector.shared.transferFile(self.persistentStoreURL,
-                metadata: nil))
+            WatchConnector.shared.transferFile(self.persistentStoreURL,
+                metadata: nil)
             
             },
-            withIdentifier: "FileRequest")
+            withIdentifier: FileRequest)
     }
     
 }
+#endif

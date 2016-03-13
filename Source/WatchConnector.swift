@@ -18,7 +18,15 @@ public let WCApplicationContextDidChange = "WCApplicationContextDidChange"
 public let WCDidReceiveUserInfo = "WCDidReceiveUserInfo"
 
 public let WCSessionReachabilityDidChange = "WCSessionReachabilityDidChange"
+
+#if os(iOS)
+public let WCWatchStateDidChange = "WCWatchStateDidChange"
+#endif
+
 public let WCDidReceiveFileNotification = "WCDidReceiveFileNotification"
+
+public let WCSessionFileURL = "WCSessionFileURL"
+public let WCSessionFileMetadata = "WCSessionFileMetadata"
 
 
 public typealias WCMessageType = [String : AnyObject]
@@ -33,7 +41,6 @@ public typealias WCErrorBlock = NSError -> Void
 
 
 @available(iOS 9.0, watchOS 2.0, *)
-
 public class WatchConnector: NSObject, WCSessionDelegate {
     
     private var session: WCSession?
@@ -87,6 +94,18 @@ public class WatchConnector: NSObject, WCSessionDelegate {
         return self.validSession?.receivedApplicationContext ?? [:]
     }
     
+    public var applicationContext: [String: AnyObject] {
+        
+        return self.validSession?.applicationContext ?? [:]
+    }
+    
+    #if os(watchOS)
+    public var iOSDeviceNeedsUnlockAfterRebootForReachability: Bool {
+        
+        return self.validSession?.iOSDeviceNeedsUnlockAfterRebootForReachability ?? true
+    }
+    #endif
+    
     private var reachableSession: WCSession? {
         
         if let validSession = self.validSession where validSession.reachable {
@@ -116,15 +135,9 @@ public class WatchConnector: NSObject, WCSessionDelegate {
                 }
             #endif
             
-            guard session.delegate != nil else {
+            guard self.isEqual(session.delegate) else {
                 
-                NSLog("WCSession delegate is nil")
-                return nil
-            }
-            
-            guard session.delegate!.isEqual(self) else {
-                
-                NSLog("WCSession delegate is not equal to ConnectivityManager")
+                NSLog("WCSession delegate is not equal to WatchConnector")
                 return nil
             }
             
@@ -267,19 +280,16 @@ public class WatchConnector: NSObject, WCSessionDelegate {
     
     #if os(iOS)
     public func sessionWatchStateDidChange(session: WCSession) {
-        
-        
+    
+        NSNotificationCenter.defaultCenter().postNotificationName(WCWatchStateDidChange, object: self, userInfo: nil)
     }
     #endif
     
     public func sessionReachabilityDidChange(session: WCSession) {
         
         let reachable = session.reachable
-        
-        dispatch_async(dispatch_get_main_queue()) { () -> Void in
             
-            NSNotificationCenter.defaultCenter().postNotificationName(WCSessionReachabilityDidChange, object: self, userInfo: ["reachable": reachable])
-        }
+        NSNotificationCenter.defaultCenter().postNotificationName(WCSessionReachabilityDidChange, object: self, userInfo: ["reachable": reachable])
     }
     
     public func session(session: WCSession, var didReceiveMessage message: [String: AnyObject]) {
@@ -345,24 +355,41 @@ public class WatchConnector: NSObject, WCSessionDelegate {
     }
     
     public func session(session: WCSession, didReceiveApplicationContext applicationContext: [String : AnyObject]) {
-        
-        dispatch_async(dispatch_get_main_queue()) { () -> Void in
             
-            NSNotificationCenter.defaultCenter().postNotificationName(WCApplicationContextDidChange, object: self, userInfo: applicationContext)
-        }
+        NSNotificationCenter.defaultCenter().postNotificationName(WCApplicationContextDidChange, object: self, userInfo: applicationContext)
     }
     
     public func session(session: WCSession, didReceiveUserInfo userInfo: [String: AnyObject]) {
-        
-        dispatch_async(dispatch_get_main_queue()) { () -> Void in
             
-            NSNotificationCenter.defaultCenter().postNotificationName(WCDidReceiveUserInfo, object: self, userInfo: userInfo)
-        }
+        NSNotificationCenter.defaultCenter().postNotificationName(WCDidReceiveUserInfo, object: self, userInfo: userInfo)
     }
     
     public func session(session: WCSession, didFinishFileTransfer fileTransfer: WCSessionFileTransfer, error: NSError?) {
         
         
+    }
+    
+    public func session(session: WCSession, didReceiveFile file: WCSessionFile) {
+        
+        NSNotificationCenter.defaultCenter().postNotificationName(WCDidReceiveFileNotification,
+            object: self,
+            userInfo: [WCSessionFileURL: file.fileURL, WCSessionFileMetadata: file.metadata ?? [:]])
+        
+        /*if let lastPathComponent = file.fileURL.lastPathComponent {
+            
+            let docURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).last!
+            
+            NSFileManager.defaultManager().moveItemAtURL(<#T##srcURL: NSURL##NSURL#>, toURL: <#T##NSURL#>)
+            
+            docURL.URLByAppendingPathComponent(lastPathComponent)
+        }
+        
+        dispatch_async(dispatch_get_main_queue()) { () -> Void in
+            
+            NSNotificationCenter.defaultCenter().postNotificationName(WCDidReceiveFileNotification,
+                object: self,
+                userInfo: [WCSessionFileURL: file.fileURL, WCSessionFileMetadata: file.metadata ?? [:]])
+        }*/
     }
     
     ///////////////////

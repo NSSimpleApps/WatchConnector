@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreData
+import WatchConnectivity
 
 class TableViewController: UITableViewController, NSFetchedResultsControllerDelegate {
     
@@ -17,7 +18,7 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
         
         self.tableView.estimatedRowHeight = 80.0
         self.tableView.rowHeight = UITableViewAutomaticDimension
-        
+        //WCSessionDelegate
         NSNotificationCenter.defaultCenter().addObserver(self,
             selector: "managedObjectContextDidSave:",
             name: NSManagedObjectContextDidSaveNotification,
@@ -33,7 +34,7 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
         
         let context = notification.object as! NSManagedObjectContext
         
-        if context.name == "WatchContext" {
+        if context.name == BackgroundContext {
             
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 
@@ -167,7 +168,17 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
     }
     
     func controllerDidChangeContent(controller: NSFetchedResultsController) {
+        
         self.tableView.endUpdates()
+        
+        do {
+            
+            try WatchConnector.shared.updateApplicationContext([NeedUpdateUI: true])
+            
+        } catch let error as NSError {
+            
+            print(error)
+        }
     }
     
     @IBAction func addURL(sender: UIBarButtonItem) {
