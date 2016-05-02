@@ -32,6 +32,7 @@
 		B51439DD1C8DC3670013B712 /* TableRowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51439DC1C8DC3670013B712 /* TableRowController.swift */; };
 		B5ACF6401C959B2200B92949 /* Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5ACF63F1C959B2200B92949 /* Keys.swift */; };
 		B5ACF6411C959B2200B92949 /* Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5ACF63F1C959B2200B92949 /* Keys.swift */; };
+		B5DC57791CD746A9000F315F /* CoreDataManager+Phone.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5DC57781CD746A9000F315F /* CoreDataManager+Phone.swift */; };
 		B5DFA2851C8ED3DF00F6F72A /* TableController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5DFA2841C8ED3DE00F6F72A /* TableController.swift */; };
 		B5DFA2861C8EE30100F6F72A /* CoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51439D01C8DAFB00013B712 /* CoreDataManager.swift */; };
 		B5DFA2871C8EE30B00F6F72A /* WatchConnector.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B51439911C8DABDD0013B712 /* WatchConnector.xcdatamodeld */; };
@@ -114,6 +115,7 @@
 		B51439E01C8DD3070013B712 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		B51439E11C8DD3070013B712 /* WatchConnector.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = WatchConnector.podspec; sourceTree = "<group>"; };
 		B5ACF63F1C959B2200B92949 /* Keys.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Keys.swift; sourceTree = "<group>"; };
+		B5DC57781CD746A9000F315F /* CoreDataManager+Phone.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+Phone.swift"; sourceTree = "<group>"; };
 		B5DFA2841C8ED3DE00F6F72A /* TableController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -225,6 +227,7 @@
 				B51439CC1C8DAE240013B712 /* Note+CoreDataProperties.swift */,
 				B51439CD1C8DAE240013B712 /* Note.swift */,
 				B51439D01C8DAFB00013B712 /* CoreDataManager.swift */,
+				B5DC57781CD746A9000F315F /* CoreDataManager+Phone.swift */,
 			);
 			name = CoreData;
 			sourceTree = "<group>";
@@ -375,6 +378,7 @@
 				B51439DB1C8DB9870013B712 /* UIAlertController+TextField.swift in Sources */,
 				B51439D31C8DB0A00013B712 /* TableViewController.swift in Sources */,
 				B5ACF6401C959B2200B92949 /* Keys.swift in Sources */,
+				B5DC57791CD746A9000F315F /* CoreDataManager+Phone.swift in Sources */,
 				B514398B1C8DABDD0013B712 /* AppDelegate.swift in Sources */,
 				B51439CE1C8DAE240013B712 /* Note+CoreDataProperties.swift in Sources */,
 				B51439D91C8DB9480013B712 /* NSDate+CustomFormat.swift in Sources */,
@@ -467,7 +471,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -481,7 +485,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -512,7 +516,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -520,7 +524,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -554,13 +558,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = "WatchConnectorWatch Extension/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = NSSimpleApps.WatchConnector.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 2.1;
+				WATCHOS_DEPLOYMENT_TARGET = 2.2;
 			};
 			name = Debug;
 		};
@@ -568,13 +573,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = "WatchConnectorWatch Extension/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = NSSimpleApps.WatchConnector.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 2.1;
+				WATCHOS_DEPLOYMENT_TARGET = 2.2;
 			};
 			name = Release;
 		};
@@ -585,12 +591,13 @@
 				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				IBSC_MODULE = WatchConnectorWatch_Extension;
 				INFOPLIST_FILE = WatchConnectorWatch/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				PRODUCT_BUNDLE_IDENTIFIER = NSSimpleApps.WatchConnector.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 2.1;
+				WATCHOS_DEPLOYMENT_TARGET = 2.2;
 			};
 			name = Debug;
 		};
@@ -601,12 +608,13 @@
 				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				IBSC_MODULE = WatchConnectorWatch_Extension;
 				INFOPLIST_FILE = WatchConnectorWatch/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				PRODUCT_BUNDLE_IDENTIFIER = NSSimpleApps.WatchConnector.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 2.1;
+				WATCHOS_DEPLOYMENT_TARGET = 2.2;
 			};
 			name = Release;
 		};

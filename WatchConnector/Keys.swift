@@ -10,10 +10,10 @@ import Foundation
 
 let NeedUpdateUI = "NeedUpdateUI"
 
-let BackgroundContext = "BackgroundContext"
-
-let RemoveNote = "RemoveNote"
-
-let FileRequest = "FileRequest"
-
 let DataRequest = "DataRequest"
+let DeleteNote = "DeleteNote"
+
+let Notes = "Notes"
+let URIRepresentation = "URIRepresentation"
+
+let ReloadData = "ReloadData"

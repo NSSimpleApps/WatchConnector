@@ -9,25 +9,28 @@
 import Foundation
 import WatchConnectivity
 
-private let WCMessageIdentifier = "WCMessageIdentifier"
-private let WCDataDescription = "WCDataDescription"
-private let WCDataIdentifier = "WCDataIdentifier"
-private let WCData = "WCData"
+private let WCMessageIdentifierKey = "WCMessageIdentifierKey"
+private let WCDataDescriptionKey = "WCDataDescriptionKey"
+private let WCDataIdentifierKey = "WCDataIdentifierKey"
+private let WCDataKey = "WCDataKey"
 
-public let WCApplicationContextDidChange = "WCApplicationContextDidChange"
-public let WCDidReceiveUserInfo = "WCDidReceiveUserInfo"
+public let WCApplicationContextDidChangeNotification = "WCApplicationContextDidChangeNotification"
+public let WCDidReceiveUserInfoNotification = "WCDidReceiveUserInfoNotification"
 
-public let WCSessionReachabilityDidChange = "WCSessionReachabilityDidChange"
+public let WCSessionReachabilityDidChangeNotification = "WCSessionReachabilityDidChangeNotification"
+public let WCReachableSessionKey = "WCReachableSessionKey"
+
 
 #if os(iOS)
-public let WCWatchStateDidChange = "WCWatchStateDidChange"
+public let WCWatchStateDidChangeNotification = "WCWatchStateDidChangeNotification"
 #endif
 
 public let WCDidReceiveFileNotification = "WCDidReceiveFileNotification"
+public let WCSessionFileURLKey = "WCSessionFileURLKey"
+public let WCSessionFileMetadataKey = "WCSessionFileMetadataKey"
 
-public let WCSessionFileURL = "WCSessionFileURL"
-public let WCSessionFileMetadata = "WCSessionFileMetadata"
-
+public let WCDidFinishFileTransferNotification = "WCDidFinishFileTransferNotification"
+public let WCSessionFileTransferKey = "WCSessionFileTransferKey"
 
 public typealias WCMessageType = [String : AnyObject]
 
@@ -103,6 +106,13 @@ public class WatchConnector: NSObject, WCSessionDelegate {
     public var iOSDeviceNeedsUnlockAfterRebootForReachability: Bool {
         
         return self.validSession?.iOSDeviceNeedsUnlockAfterRebootForReachability ?? true
+    }
+    #endif
+    
+    #if os(iOS)
+    public var watchDirectoryURL: NSURL? {
+        
+        return self.validSession?.watchDirectoryURL
     }
     #endif
     
@@ -222,11 +232,13 @@ public class WatchConnector: NSObject, WCSessionDelegate {
         }
     }
     
-    public func sendMessage(var message: WCMessageType, withIdentifier identifier: String, replyBlock: WCMessageBlock, errorBlock: WCErrorBlock?) {
+    public func sendMessage(message: WCMessageType, withIdentifier identifier: String, replyBlock: WCMessageBlock, errorBlock: WCErrorBlock?) {
         
-        message[WCMessageIdentifier] = identifier
+        var messageToSend = message
         
-        self.reachableSession?.sendMessage(message, replyHandler: { (reply: [String: AnyObject]) -> Void in
+        messageToSend[WCMessageIdentifierKey] = identifier
+        
+        self.reachableSession?.sendMessage(messageToSend, replyHandler: { (reply: [String: AnyObject]) -> Void in
             
             replyBlock(reply)
             
@@ -237,43 +249,55 @@ public class WatchConnector: NSObject, WCSessionDelegate {
         })
     }
     
-    public func sendMessage(var message: WCMessageType, withIdentifier identifier: String, errorBlock: WCErrorBlock?) {
+    public func sendMessage(message: WCMessageType, withIdentifier identifier: String, errorBlock: WCErrorBlock?) {
         
-        message[WCMessageIdentifier] = identifier
+        var messageToSend = message
         
-        self.reachableSession?.sendMessage(message, replyHandler: nil, errorHandler: { (error: NSError) -> Void in
+        messageToSend[WCMessageIdentifierKey] = identifier
+        
+        self.reachableSession?.sendMessage(messageToSend, replyHandler: nil, errorHandler: { (error: NSError) -> Void in
                 
             errorBlock?(error)
         })
     }
     
-    public func sendData(data: NSData, withIdentifier identifier: String, description: String, errorBlock: WCErrorBlock?) {
+    public func sendData(data: NSData, withIdentifier identifier: String, description: String?, errorBlock: WCErrorBlock?) {
         
-        let dataToSend = NSKeyedArchiver.archivedDataWithRootObject([WCDataIdentifier: identifier, WCDataDescription: description, WCData: data])
+        var message = [WCDataIdentifierKey: identifier, WCDataKey: data]
         
-        self.reachableSession?.sendMessageData(dataToSend, replyHandler: nil, errorHandler: { (error: NSError) -> Void in
-                
-            errorBlock?(error)
+        if let description = description {
+            
+            message[WCDataDescriptionKey] = description
+        }
+        self.reachableSession?.sendMessageData(NSKeyedArchiver.archivedDataWithRootObject(message),
+                                               replyHandler: nil,
+                                               errorHandler: { (error: NSError) -> Void in
+                                                errorBlock?(error)
         })
     }
     
-    public func sendData(data: NSData, withIdentifier identifier: String, description: String, replyBlock: WCDataBlock, errorBlock: WCErrorBlock?) {
+    public func sendData(data: NSData, withIdentifier identifier: String, description: String?, replyBlock: WCDataBlock, errorBlock: WCErrorBlock?) {
         
-        let dataToSend = NSKeyedArchiver.archivedDataWithRootObject([WCDataIdentifier: identifier, WCDataDescription: description, WCData: data])
+        var message = [WCDataIdentifierKey: identifier, WCDataKey: data]
         
-        self.reachableSession?.sendMessageData(dataToSend, replyHandler: { (replyData: NSData) -> Void in
+        if let description = description {
+            
+            message[WCDataDescriptionKey] = description
+        }
+        
+        self.reachableSession?.sendMessageData(NSKeyedArchiver.archivedDataWithRootObject(message),
+                                               replyHandler: { (replyData: NSData) -> Void in
             
             replyBlock(replyData, nil)
             },
-            errorHandler: { (error: NSError) -> Void in
-                    
-            errorBlock?(error)
+                                               errorHandler: { (error: NSError) -> Void in
+                                                errorBlock?(error)
         })
     }
     
     public func transferFile(file: NSURL, metadata: [String : AnyObject]?) -> WCSessionFileTransfer? {
         
-        return self.validSession?.transferFile(file, metadata: metadata)
+        return self.reachableSession?.transferFile(file, metadata: metadata)
     }
     
     // WCSessionDelegate
@@ -281,38 +305,48 @@ public class WatchConnector: NSObject, WCSessionDelegate {
     #if os(iOS)
     public func sessionWatchStateDidChange(session: WCSession) {
     
-        NSNotificationCenter.defaultCenter().postNotificationName(WCWatchStateDidChange, object: self, userInfo: nil)
+        let nc = NSNotificationCenter.defaultCenter()
+        nc.postNotificationName(WCWatchStateDidChangeNotification,
+                                object: self,
+                                userInfo: nil)
     }
     #endif
     
     public func sessionReachabilityDidChange(session: WCSession) {
         
         let reachable = session.reachable
-            
-        NSNotificationCenter.defaultCenter().postNotificationName(WCSessionReachabilityDidChange, object: self, userInfo: ["reachable": reachable])
+        
+        let nc = NSNotificationCenter.defaultCenter()
+        nc.postNotificationName(WCSessionReachabilityDidChangeNotification,
+                                object: self,
+                                userInfo: [WCReachableSessionKey: reachable])
     }
     
-    public func session(session: WCSession, var didReceiveMessage message: [String: AnyObject]) {
+    public func session(session: WCSession, didReceiveMessage message: [String: AnyObject]) {
         
-        let identifier = message[WCMessageIdentifier] as! String
+        let identifier = message[WCMessageIdentifierKey] as! String
         
-        message[WCMessageIdentifier] = nil
+        var receivedMessage = message
+        
+        receivedMessage[WCMessageIdentifierKey] = nil
         
         if let messageBlock = self.messageBlockForIdentifier(identifier) {
             
-            messageBlock(message)
+            messageBlock(receivedMessage)
         }
     }
     
-    public func session(session: WCSession, var didReceiveMessage message: [String : AnyObject], replyHandler: ([String: AnyObject]) -> Void) {
+    public func session(session: WCSession, didReceiveMessage message: [String : AnyObject], replyHandler: ([String: AnyObject]) -> Void) {
         
-        let identifier = message[WCMessageIdentifier] as! String
+        let identifier = message[WCMessageIdentifierKey] as! String
         
-        message[WCMessageIdentifier] = nil
+        var receivedMessage = message
+        
+        receivedMessage[WCMessageIdentifierKey] = nil
         
         if let replyMessageBlock = self.replyMessageBlockForIdentifier(identifier) {
             
-            replyHandler(replyMessageBlock(message))
+            replyHandler(replyMessageBlock(receivedMessage))
         }
     }
     
@@ -320,13 +354,13 @@ public class WatchConnector: NSObject, WCSessionDelegate {
         
         if let receivedObject = NSKeyedUnarchiver.unarchiveObjectWithData(messageData) {
             
-            let identifier = receivedObject[WCDataIdentifier] as! String
+            let identifier = receivedObject[WCDataIdentifierKey] as! String
             
             if let dataBlock = self.dataBlockForIdentifier(identifier) {
                 
-                let description = receivedObject[WCDataDescription] as? String
+                let description = receivedObject[WCDataDescriptionKey] as? String
                     
-                dataBlock(receivedObject[WCData] as! NSData, description)
+                dataBlock(receivedObject[WCDataKey] as! NSData, description)
             }
             
         } else {
@@ -339,13 +373,13 @@ public class WatchConnector: NSObject, WCSessionDelegate {
         
         if let receivedObject = NSKeyedUnarchiver.unarchiveObjectWithData(messageData) {
             
-            let identifier = receivedObject[WCDataIdentifier] as! String
+            let identifier = receivedObject[WCDataIdentifierKey] as! String
             
             if let replyDataBlock = self.replyDataBlockForIdentifier(identifier) {
                 
-                let description = receivedObject[WCDataDescription] as? String
+                let description = receivedObject[WCDataDescriptionKey] as? String
                     
-                replyHandler(replyDataBlock(receivedObject[WCData] as! NSData, description))
+                replyHandler(replyDataBlock(receivedObject[WCDataKey] as! NSData, description))
             }
             
         } else {
@@ -355,41 +389,53 @@ public class WatchConnector: NSObject, WCSessionDelegate {
     }
     
     public func session(session: WCSession, didReceiveApplicationContext applicationContext: [String : AnyObject]) {
-            
-        NSNotificationCenter.defaultCenter().postNotificationName(WCApplicationContextDidChange, object: self, userInfo: applicationContext)
+        
+        let nc = NSNotificationCenter.defaultCenter()
+        nc.postNotificationName(WCApplicationContextDidChangeNotification,
+                                object: self,
+                                userInfo: applicationContext)
     }
     
     public func session(session: WCSession, didReceiveUserInfo userInfo: [String: AnyObject]) {
-            
-        NSNotificationCenter.defaultCenter().postNotificationName(WCDidReceiveUserInfo, object: self, userInfo: userInfo)
+        
+        let nc = NSNotificationCenter.defaultCenter()
+        nc.postNotificationName(WCDidReceiveUserInfoNotification,
+                                object: self,
+                                userInfo: userInfo)
     }
     
     public func session(session: WCSession, didFinishFileTransfer fileTransfer: WCSessionFileTransfer, error: NSError?) {
         
+        var userInfo: [String: AnyObject] = [WCSessionFileTransferKey: fileTransfer]
         
+        if let error = error {
+            
+            userInfo[NSUnderlyingErrorKey] = error
+        }
+        
+        let nc = NSNotificationCenter.defaultCenter()
+        nc.postNotificationName(WCDidFinishFileTransferNotification,
+                                object: self,
+                                userInfo: userInfo)
     }
     
     public func session(session: WCSession, didReceiveFile file: WCSessionFile) {
         
-        NSNotificationCenter.defaultCenter().postNotificationName(WCDidReceiveFileNotification,
-            object: self,
-            userInfo: [WCSessionFileURL: file.fileURL, WCSessionFileMetadata: file.metadata ?? [:]])
+        var userInfo: [String: AnyObject] = [WCSessionFileURLKey: file.fileURL]
         
-        /*if let lastPathComponent = file.fileURL.lastPathComponent {
+        if let metadata = file.metadata {
             
-            let docURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).last!
-            
-            NSFileManager.defaultManager().moveItemAtURL(<#T##srcURL: NSURL##NSURL#>, toURL: <#T##NSURL#>)
-            
-            docURL.URLByAppendingPathComponent(lastPathComponent)
+            userInfo[WCSessionFileMetadataKey] = metadata
         }
         
-        dispatch_async(dispatch_get_main_queue()) { () -> Void in
-            
-            NSNotificationCenter.defaultCenter().postNotificationName(WCDidReceiveFileNotification,
-                object: self,
-                userInfo: [WCSessionFileURL: file.fileURL, WCSessionFileMetadata: file.metadata ?? [:]])
-        }*/
+        NSNotificationCenter.defaultCenter().postNotificationName(WCDidReceiveFileNotification,
+            object: self,
+            userInfo: userInfo)
+    }
+    
+    public var outstandingFileTransfers: [WCSessionFileTransfer] {
+        
+        return self.validSession?.outstandingFileTransfers ?? []
     }
     
     ///////////////////

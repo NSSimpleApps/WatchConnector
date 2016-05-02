@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="9532" systemVersion="15D21" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="AgC-eL-Hgc">
+<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="10116" systemVersion="15E65" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="AgC-eL-Hgc">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9530"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="9515"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="10032"/>
     </dependencies>
     <scenes>
         <!--URLs-->
         <scene sceneID="aou-V4-d1y">
             <objects>
-                <controller title="URLs" id="AgC-eL-Hgc" customClass="InterfaceController" customModule="WatchConnectorWatch" customModuleProvider="target">
+                <controller title="URLs" id="AgC-eL-Hgc" customClass="InterfaceController" customModule="WatchConnectorWatch_Extension">
                     <items>
                         <button width="1" height="0.20000000000000001" alignment="center" title="Request" id="nd3-js-HNQ">
                             <connections>
                                 <action selector="requestData" destination="AgC-eL-Hgc" id="YZI-2W-Nby"/>
                             </connections>
                         </button>
-                        <table alignment="center" verticalAlignment="center" id="XX5-WL-45E">
+                        <table alignment="center" id="XX5-WL-45E">
                             <items>
                                 <tableRow identifier="TableRowController" id="TU3-bj-zfl" customClass="TableRowController" customModule="WatchConnectorWatch_Extension">
                                     <group key="rootItem" width="1" height="0.0" alignment="left" layout="vertical" id="atP-Cl-YwG">
@@ -48,7 +48,7 @@
             <objects>
                 <controller id="a6R-iM-49E" customClass="TableController" customModule="WatchConnectorWatch_Extension">
                     <items>
-                        <table alignment="center" verticalAlignment="center" id="Bpp-zH-6Lu">
+                        <table alignment="center" hidden="YES" id="Bpp-zH-6Lu">
                             <items>
                                 <tableRow identifier="TableRowController" selectable="NO" id="aRH-Oc-sbl" customClass="TableRowController" customModule="WatchConnectorWatch_Extension">
                                     <group key="rootItem" width="1" height="0.0" alignment="left" layout="vertical" id="vfx-Hi-owq">
@@ -64,15 +64,9 @@
                                 </tableRow>
                             </items>
                         </table>
-                        <button width="1" height="0.20000000000000001" alignment="center" title="Request file" id="anj-oh-Cgj">
-                            <connections>
-                                <action selector="requestData" destination="a6R-iM-49E" id="cI9-nt-CrJ"/>
-                            </connections>
-                        </button>
-                        <label alignment="center" verticalAlignment="center" hidden="YES" text="Label" textAlignment="center" numberOfLines="0" id="PhG-gh-mvg"/>
+                        <label alignment="center" verticalAlignment="center" text="Send a file from phone" textAlignment="center" numberOfLines="0" id="PhG-gh-mvg"/>
                     </items>
                     <connections>
-                        <outlet property="button" destination="anj-oh-Cgj" id="dgT-Fl-bVC"/>
                         <outlet property="errorLabel" destination="PhG-gh-mvg" id="vTW-w7-88X"/>
                         <outlet property="table" destination="Bpp-zH-6Lu" id="Ccz-6s-qQe"/>
                     </connections>

@@ -17,9 +17,7 @@ class InterfaceController: WKInterfaceController {
     
     @IBOutlet var errorLabel: WKInterfaceLabel!
     
-    private var images: [NSData] = []
-    private var urls: [String] = []
-    private var ids: [String] = []
+    private var notes = [[String: AnyObject]]()
     
     private var rowIndex: Int?
     
@@ -27,18 +25,57 @@ class InterfaceController: WKInterfaceController {
         
         super.awakeWithContext(context)
         
+        self.updateTitleWithContext(WatchConnector.shared.receivedApplicationContext)
+        
+        let nc = NSNotificationCenter.defaultCenter()
+        nc.addObserver(self,
+                       selector: #selector(self.applicationContextDidChange(_:)),
+                       name: WCApplicationContextDidChangeNotification,
+                       object: WatchConnector.shared)
+        
         //WCSessionDelegate
     }
-
+    
+    func updateTitleWithContext(context: [String: AnyObject]) {
+        
+        let title: String
+        
+        if let flag = context[NeedUpdateUI] as? Bool {
+            
+            if flag {
+                
+                title = "Update table!"
+                
+            } else {
+                
+                title = "Up to date!"
+            }
+            
+        } else {
+            
+            title = "Unknown"
+        }
+        self.setTitle(title)
+    }
+    
+    func applicationContextDidChange(notification: NSNotification) {
+        
+        if let context = notification.userInfo as? [String: AnyObject] {
+            
+            dispatch_async(dispatch_get_main_queue(), {
+                
+                self.updateTitleWithContext(context)
+            })
+        }
+    }
+    
     override func willActivate() {
         
         super.willActivate()
         
         if self.rowIndex != nil {
             
-            self.urls.removeAtIndex(self.rowIndex!)
-            self.images.removeAtIndex(self.rowIndex!)
-            self.ids.removeAtIndex(self.rowIndex!)
+            self.notes.removeAtIndex(self.rowIndex!)
             self.table.removeRowsAtIndexes(NSIndexSet(index: self.rowIndex!))
             
             self.rowIndex = nil
@@ -54,28 +91,37 @@ class InterfaceController: WKInterfaceController {
         
         self.button.setEnabled(false)
         
-        WatchConnector.shared.sendData(NSData(), withIdentifier: DataRequest, description: "", replyBlock: { (data: NSData, description: String?) -> Void in
+        WatchConnector.shared.sendData(NSData(), withIdentifier: DataRequest, description: nil, replyBlock: { (data: NSData, description: String?) -> Void in
             
-            if let object = NSKeyedUnarchiver.unarchiveObjectWithData(data) {
+            if let message = NSKeyedUnarchiver.unarchiveObjectWithData(data) {
                 
-                self.images = object["Images"] as! [NSData]
-                self.urls = object["URLs"] as! [String]
-                self.ids = object["IDs"] as! [String]
+                self.notes = message[Notes] as! [[String: AnyObject]]
                 
                 dispatch_async(dispatch_get_main_queue(), { () -> Void in
                     
                     self.table.setHidden(false)
                     self.errorLabel.setHidden(true)
                     
-                    let numberOfRows = self.images.count
+                    let numberOfRows = self.notes.count
                     
-                    self.table.setNumberOfRows(numberOfRows, withRowType: String(TableRowController))
-                    
-                    for index in (0..<numberOfRows) {
+                    if numberOfRows == 0 {
                         
-                        let tableRowController = self.table.rowControllerAtIndex(index) as! TableRowController
-                        tableRowController.image.setImageData(self.images[index])
-                        tableRowController.label.setText(self.urls[index])
+                        self.table.setHidden(true)
+                        self.errorLabel.setHidden(false)
+                        self.errorLabel.setText("No notes")
+                        
+                    } else {
+                        
+                        self.table.setNumberOfRows(numberOfRows, withRowType: String(TableRowController))
+                        
+                        for index in (0..<numberOfRows) {
+                            
+                            let tableRowController = self.table.rowControllerAtIndex(index) as! TableRowController
+                            tableRowController.image.setImageData(self.notes[index]["image"] as? NSData)
+                            tableRowController.label.setText(self.notes[index]["url"] as? String)
+                        }
+                        self.table.setHidden(false)
+                        self.errorLabel.setHidden(true)
                     }
                     
                     self.button.setEnabled(true)
@@ -101,8 +147,8 @@ class InterfaceController: WKInterfaceController {
         
         let deleteAction = WKAlertAction(title: "Yes", style: .Default) { () -> Void in
             
-            WatchConnector.shared.sendMessage(["id": self.ids[rowIndex]],
-                withIdentifier: RemoveNote,
+            WatchConnector.shared.sendMessage([URIRepresentation: self.notes[rowIndex][URIRepresentation] as! String],
+                withIdentifier: DeleteNote,
                 errorBlock: { (error: NSError) -> Void in
                     
                     print(error)
@@ -116,6 +162,6 @@ class InterfaceController: WKInterfaceController {
             
         }
         
-        self.presentAlertControllerWithTitle("Are you sure you want to delete URL \(self.urls[rowIndex])", message: nil, preferredStyle: WKAlertControllerStyle.Alert, actions: [deleteAction, cancelAction])
+        self.presentAlertControllerWithTitle("Are you sure you want to delete URL \(self.notes[rowIndex]["url"]!)", message: nil, preferredStyle: WKAlertControllerStyle.Alert, actions: [deleteAction, cancelAction])
     }
 }

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9532" systemVersion="15D21" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="g0e-Vq-pbK">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10116" systemVersion="15E65" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="g0e-Vq-pbK">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9530"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
     </dependencies>
     <scenes>
         <!--URLs-->
@@ -38,6 +38,11 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="URLs" id="CQF-3g-DbF">
+                        <barButtonItem key="leftBarButtonItem" systemItem="action" id="iDk-Ra-BEH">
+                            <connections>
+                                <action selector="sendFile:" destination="hqg-sn-Xm7" id="DEb-ml-ldV"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="6Ii-G5-eiZ">
                             <connections>
                                 <action selector="addURL:" destination="hqg-sn-Xm7" id="t5p-nS-9pt"/>

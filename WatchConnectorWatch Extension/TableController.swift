@@ -22,35 +22,73 @@ class TableController: WKInterfaceController {
         
         super.awakeWithContext(context)
         
-        NSNotificationCenter.defaultCenter().addObserver(self,
-            selector: "didReceiveFile:",
-            name: WCDidReceiveFileNotification,
-            object: WatchConnector.shared)
-    }
-    
-    func didReceiveFile(notification: NSNotification) {
+        let nc = NSNotificationCenter.defaultCenter()
         
-        if let fileURL = notification.userInfo?[WCSessionFileURL] as? NSURL {
+        nc.addObserver(self,
+                       selector: #selector(self.didReceiveFile(_:)),
+                       name: WCDidReceiveFileNotification,
+                       object: WatchConnector.shared)
         
-            dispatch_sync(dispatch_get_main_queue()) { () -> Void in
+        WatchConnector.shared.listenToMessageBlock({ (message: WCMessageType) in
+            
+            dispatch_async(dispatch_get_main_queue(), {
                 
-                CoreDataManager.shared.persistentStoreURL = fileURL
+                let cdm = CoreDataManager.shared
                 
-                let fetchRequest = NSFetchRequest(entityName: String(Note))
+                let currentStore = cdm.persistentStoreCoordinator.persistentStores.last!
                 
-                let managedObjectContext = CoreDataManager.shared.managedObjectContext
+                let fm = NSFileManager.defaultManager()
                 
                 do {
                     
-                    print(try managedObjectContext.executeFetchRequest(fetchRequest))
+                    let content = try fm.contentsOfDirectoryAtURL(cdm.coreDataDirectory, includingPropertiesForKeys: nil, options: .SkipsSubdirectoryDescendants)
+                    
+                    let newStoreURL = content.filter({ (URL: NSURL) -> Bool in
+                        
+                        URL.pathExtension == "sqlite"
+                    }).first!
+                    
+                    try cdm.persistentStoreCoordinator.removePersistentStore(currentStore)
+                    try cdm.persistentStoreCoordinator.addPersistentStoreWithType(NSSQLiteStoreType, configuration: nil, URL: newStoreURL, options: nil)
+                    
+                    /*let oldPersistentStore = try cdm.persistentStoreCoordinator.migratePersistentStore(currentStore, toURL: newStoreURL, options: nil, withType: NSSQLiteStoreType)
+                    
+                    try cdm.persistentStoreCoordinator.destroyPersistentStoreAtURL(currentStore, withType: NSSQLiteStoreType, options: nil)*/
+                    
+                    try self.reloadData()
                     
                 } catch let error as NSError {
                     
                     print(error)
                 }
+            })
+            
+            }, withIdentifier: ReloadData)
+    }
+    
+    func didReceiveFile(notification: NSNotification) {
+        
+        if let fileURL = notification.userInfo?[WCSessionFileURLKey] as? NSURL {
+            
+            let lastPathComponent = fileURL.lastPathComponent!
+            
+            let fm = NSFileManager.defaultManager()
+            
+            let URL = CoreDataManager.shared.coreDataDirectory.URLByAppendingPathComponent(lastPathComponent)
+            
+            do {
                 
-                self.button.setEnabled(true)
-            }
+                if fm.fileExistsAtPath(URL.path!) {
+                    
+                    try fm.removeItemAtURL(URL)
+                }
+                
+                try fm.moveItemAtURL(fileURL, toURL: URL)
+                    
+                } catch let error as NSError {
+                    
+                    print(#function, error.localizedDescription)
+                }
         }
     }
     
@@ -64,24 +102,40 @@ class TableController: WKInterfaceController {
         super.didDeactivate()
     }
     
-    @IBAction func requestData() {
+    func reloadData() throws {
         
-        self.button.setEnabled(false)
+        let managedObjectContext = CoreDataManager.shared.managedObjectContext
         
-        WatchConnector.shared.sendMessage([:],
-            withIdentifier: FileRequest)
-            { (error: NSError) -> Void in
+        let entity = NSEntityDescription.entityForName(String(Note), inManagedObjectContext: managedObjectContext)
+        
+        let fetchRequest = NSFetchRequest()
+        fetchRequest.entity = entity
+        fetchRequest.resultType = .DictionaryResultType
+        
+        let notes = try managedObjectContext.executeFetchRequest(fetchRequest) as! [[String: AnyObject]]
+        
+        let numberOfRows = notes.count
+        
+        if numberOfRows == 0 {
+            
+            self.table.setHidden(true)
+            self.errorLabel.setHidden(false)
+            self.errorLabel.setText("No notes")
+            
+        } else {
+            
+            self.table.setNumberOfRows(numberOfRows, withRowType: String(TableRowController))
+            
+            for index in (0..<numberOfRows) {
                 
-                print(error)
-                
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                    
-                    self.table.setHidden(true)
-                    self.errorLabel.setHidden(false)
-                    self.errorLabel.setText(error.localizedDescription)
-                    
-                    self.button.setEnabled(true)
-                })
+                let tableRowController = self.table.rowControllerAtIndex(index) as! TableRowController
+                tableRowController.image.setImageData(notes[index]["image"] as? NSData)
+                tableRowController.label.setText(notes[index]["url"] as? String)
+            }
+            self.table.setHidden(false)
+            self.errorLabel.setHidden(true)
         }
     }
 }
+
+

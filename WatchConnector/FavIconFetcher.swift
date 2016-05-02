@@ -10,25 +10,28 @@ import UIKit
 
 class FavIconFetcher: NSObject {
     
-    class func fetchFavIconWithURL(var URL: NSURL, completionHandler: (NSData, NSURLResponse?) -> Void) {
+    class func fetchFavIconWithAddress(address: String, completionHandler: (NSData, NSURLResponse?) -> Void) {
         
-        URL = URL.URLByAppendingPathComponent("favicon.ico")
-        
-        let URLSession = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration())
-        
-        let URLSessionDataTask =
-        
-        URLSession.dataTaskWithURL(URL) { (data: NSData?, URLResponse: NSURLResponse?, error: NSError?) -> Void in
+        if let URL = NSURL(string: address), let host = URL.host {
             
-            if error == nil && data != nil {
+            if let URLToFetch = NSURL(string: "https://" + host)?.URLByAppendingPathComponent("favicon.ico") {
                 
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                let URLSession = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration())
+                
+                let URLSessionDataTask =
                     
-                    completionHandler(data!, URLResponse)
-                })
+                    URLSession.dataTaskWithURL(URLToFetch) { (data: NSData?, URLResponse: NSURLResponse?, error: NSError?) -> Void in
+                        
+                        if error == nil && data != nil {
+                            
+                            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                                
+                                completionHandler(data!, URLResponse)
+                            })
+                        }
+                }
+                URLSessionDataTask.resume()
             }
         }
-        
-        URLSessionDataTask.resume()
     }
 }

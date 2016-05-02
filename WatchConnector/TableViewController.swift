@@ -18,16 +18,28 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
         
         self.tableView.estimatedRowHeight = 80.0
         self.tableView.rowHeight = UITableViewAutomaticDimension
-        //WCSessionDelegate
-        NSNotificationCenter.defaultCenter().addObserver(self,
-            selector: "managedObjectContextDidSave:",
-            name: NSManagedObjectContextDidSaveNotification,
-            object: nil)
+        
+        let nc = NSNotificationCenter.defaultCenter()
+            
+        nc.addObserver(self,
+                       selector: #selector(self.managedObjectContextDidSave(_:)),
+                       name: NSManagedObjectContextDidSaveNotification,
+                       object: nil)
+        
+        nc.addObserver(self,
+                       selector: #selector(self.didFinishFileTransfer(_:)),
+                       name: WCDidFinishFileTransferNotification,
+                       object: WatchConnector.shared)
     }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    deinit {
+        
+        NSNotificationCenter.defaultCenter().removeObserver(self)
     }
     
     func managedObjectContextDidSave(notification: NSNotification) {
@@ -40,6 +52,26 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
                 
                 self.fetchedResultsController.managedObjectContext.mergeChangesFromContextDidSaveNotification(notification)
             })
+        }
+    }
+    
+    func didFinishFileTransfer(notification: NSNotification) {
+        
+        if let error = notification.userInfo?[NSUnderlyingErrorKey] as? NSError {
+            
+            print(error)
+            
+        } else {
+            
+            let watchConnector = notification.object as! WatchConnector
+            watchConnector.sendMessage([:],
+                                       withIdentifier: ReloadData,
+                                       errorBlock: nil)
+        }
+        
+        dispatch_async(dispatch_get_main_queue()) {
+            
+            self.navigationItem.leftBarButtonItem?.enabled = true
         }
     }
     
@@ -57,9 +89,16 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
+        let note = self.fetchedResultsController.objectAtIndexPath(indexPath) as! Note
         
-        self.configureCell(cell, atIndexPath: indexPath)
+        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
+        cell.textLabel?.text = note.url
+        cell.detailTextLabel?.text = note.timestamp!.customFormat
+        
+        if let data = note.image {
+            
+            cell.imageView?.image = UIImage(data: data)
+        }
         
         return cell
     }
@@ -82,19 +121,6 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
                 
                 abort()
             }
-        }
-    }
-    
-    func configureCell(cell: UITableViewCell, atIndexPath indexPath: NSIndexPath) {
-        
-        let note = self.fetchedResultsController.objectAtIndexPath(indexPath) as! Note
-        
-        cell.textLabel?.text = note.url
-        cell.detailTextLabel?.text = note.timestamp!.customFormat
-        
-        if let data = note.image {
-            
-            cell.imageView?.image = UIImage(data: data)
         }
     }
     
@@ -149,21 +175,19 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
         switch type {
         case .Insert:
             
-            tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Fade)
+            self.tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Fade)
             
         case .Delete:
             
-            tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
+            self.tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
             
         case .Update:
             
-            if let cell = tableView.cellForRowAtIndexPath(indexPath!) {
-                
-                self.configureCell(cell, atIndexPath: indexPath!)
-            }
+            self.tableView.reloadRowsAtIndexPaths([indexPath!], withRowAnimation: .Automatic)
+            
         case .Move:
-            tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
-            tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Fade)
+            self.tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
+            self.tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Fade)
         }
     }
     
@@ -185,9 +209,9 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
         
         let alertController = UIAlertController(title: "Add URL") { (text: String) -> Void in
             
-            FavIconFetcher.fetchFavIconWithURL(NSURL(string: text)!, completionHandler: { (data: NSData, URLResponse: NSURLResponse?) -> Void in
+            FavIconFetcher.fetchFavIconWithAddress(text, completionHandler: { (data: NSData, URLResponse: NSURLResponse?) -> Void in
                 
-                let managedObjectContext = CoreDataManager.shared.managedObjectContext
+                let managedObjectContext = self.fetchedResultsController.managedObjectContext
                 
                 let note = NSEntityDescription.insertNewObjectForEntityForName(String(Note), inManagedObjectContext: managedObjectContext) as! Note
                 
@@ -211,8 +235,25 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
     
     @IBAction func sendFile(sender: UIBarButtonItem) {
         
+        sender.enabled = false
         
+        let URL = CoreDataManager.shared.coreDataDirectory
+        
+        do {
+            
+            let content = try NSFileManager.defaultManager().contentsOfDirectoryAtURL(URL,includingPropertiesForKeys: nil, options: .SkipsSubdirectoryDescendants)
+            
+            for url in content {
+                
+                WatchConnector.shared.transferFile(url, metadata: nil)
+            }
+            
+        } catch let error as NSError {
+            
+            print(error)
+            
+            sender.enabled = true
+        }
     }
-    
 }
 

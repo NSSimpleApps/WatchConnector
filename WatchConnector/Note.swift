@@ -11,7 +11,20 @@ import CoreData
 
 
 class Note: NSManagedObject {
-
-// Insert code here to add functionality to your managed object subclass
-
+    
+    func toDictionary() -> [String: AnyObject] {
+        
+        var result = [String: AnyObject]()
+        
+        if let url = self.url {
+            
+            result["url"] = url
+        }
+        
+        if let image = self.image {
+            
+            result["image"] = image
+        }
+        return result
+    }
 }
