@@ -9,6 +9,7 @@
 import WatchKit
 import Foundation
 import CoreData
+import WatchConnectivity
 
 
 class TableController: WKInterfaceController {
@@ -61,9 +62,9 @@ class TableController: WKInterfaceController {
     
     func didReceiveFile(notification: NSNotification) {
         
-        if let fileURL = notification.userInfo?[WCSessionFileURLKey] as? NSURL {
+        if let file = notification.userInfo?[WCSessionFileKey] as? WCSessionFile {
             
-            let lastPathComponent = fileURL.lastPathComponent!
+            let lastPathComponent = file.fileURL.lastPathComponent!
             
             let fm = NSFileManager.defaultManager()
             
@@ -76,7 +77,7 @@ class TableController: WKInterfaceController {
                     try fm.removeItemAtURL(URL)
                 }
                 
-                try fm.moveItemAtURL(fileURL, toURL: URL)
+                try fm.moveItemAtURL(file.fileURL, toURL: URL)
                     
                 } catch let error as NSError {
                     
