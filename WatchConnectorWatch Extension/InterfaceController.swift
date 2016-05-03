@@ -38,6 +38,8 @@ class InterfaceController: WKInterfaceController {
     
     func updateTitleWithContext(context: [String: AnyObject]) {
         
+        print("!!!!", context)
+        
         let title: String
         
         if let flag = context[NeedUpdateUI] as? Bool {

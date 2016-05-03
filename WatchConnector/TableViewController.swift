@@ -20,12 +20,10 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
         self.tableView.rowHeight = UITableViewAutomaticDimension
         
         let nc = NSNotificationCenter.defaultCenter()
-            
         nc.addObserver(self,
                        selector: #selector(self.managedObjectContextDidSave(_:)),
                        name: NSManagedObjectContextDidSaveNotification,
                        object: nil)
-        
         nc.addObserver(self,
                        selector: #selector(self.didFinishFileTransfer(_:)),
                        name: WCDidFinishFileTransferNotification,

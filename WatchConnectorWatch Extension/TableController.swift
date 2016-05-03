@@ -35,8 +35,6 @@ class TableController: WKInterfaceController {
                 
                 let cdm = CoreDataManager.shared
                 
-                let currentStore = cdm.persistentStoreCoordinator.persistentStores.last!
-                
                 let fm = NSFileManager.defaultManager()
                 
                 do {
@@ -48,12 +46,7 @@ class TableController: WKInterfaceController {
                         URL.pathExtension == "sqlite"
                     }).first!
                     
-                    try cdm.persistentStoreCoordinator.removePersistentStore(currentStore)
-                    try cdm.persistentStoreCoordinator.addPersistentStoreWithType(NSSQLiteStoreType, configuration: nil, URL: newStoreURL, options: nil)
-                    
-                    /*let oldPersistentStore = try cdm.persistentStoreCoordinator.migratePersistentStore(currentStore, toURL: newStoreURL, options: nil, withType: NSSQLiteStoreType)
-                    
-                    try cdm.persistentStoreCoordinator.destroyPersistentStoreAtURL(currentStore, withType: NSSQLiteStoreType, options: nil)*/
+                    try cdm.migrateToNewStoreURL(newStoreURL)
                     
                     try self.reloadData()
                     

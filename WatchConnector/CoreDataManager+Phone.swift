@@ -11,7 +11,7 @@ import CoreData
 
 let BackgroundContext = "BackgroundContext"
 
-extension CoreDataManager { // for request all entities
+extension CoreDataManager { // for watch request
     
     func initWatchInteraction() {
         
