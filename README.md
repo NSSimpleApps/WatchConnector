@@ -1,6 +1,8 @@
 # WatchConnector
 WatchConnector is a tool for more convenient interaction between Watch and Phone.
 
+![Alt text](https://github.com/NSSimpleApps/WatchConnector/blob/master/WatchConnector.gif)
+
 Minimal deployment targets: `iOS 9.0`, `watchOS 2.0`
 
 Installation guide: place this into `Podfile`
