@@ -8,7 +8,7 @@
 
 import Foundation
 
-let NeedUpdateUI = "NeedUpdateUI"
+let UpdateUIKey = "UpdateUIKey"
 
 let DataRequest = "DataRequest"
 let DeleteNote = "DeleteNote"

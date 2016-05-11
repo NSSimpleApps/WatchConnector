@@ -195,7 +195,7 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
         
         do {
             
-            try WatchConnector.shared.updateApplicationContext([NeedUpdateUI: true])
+            try WatchConnector.shared.updateApplicationContext([UpdateUIKey: true])
             
         } catch let error as NSError {
             

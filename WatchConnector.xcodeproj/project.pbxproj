@@ -116,6 +116,7 @@
 		B51439E01C8DD3070013B712 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		B51439E11C8DD3070013B712 /* WatchConnector.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = WatchConnector.podspec; sourceTree = "<group>"; };
 		B52E8AE31CD851F5004C10AB /* CoreDataManager+Watch.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+Watch.swift"; sourceTree = "<group>"; };
+		B5902C361CE373EA009054A1 /* WatchConnector.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = WatchConnector.gif; sourceTree = "<group>"; };
 		B5ACF63F1C959B2200B92949 /* Keys.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Keys.swift; sourceTree = "<group>"; };
 		B5DC57781CD746A9000F315F /* CoreDataManager+Phone.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+Phone.swift"; sourceTree = "<group>"; };
 		B5DFA2841C8ED3DE00F6F72A /* TableController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableController.swift; sourceTree = "<group>"; };
@@ -142,6 +143,7 @@
 		B514397E1C8DABDD0013B712 = {
 			isa = PBXGroup;
 			children = (
+				B5902C361CE373EA009054A1 /* WatchConnector.gif */,
 				B51439DE1C8DD3070013B712 /* CHANGELOG.md */,
 				B51439DF1C8DD3070013B712 /* LICENSE */,
 				B51439E01C8DD3070013B712 /* README.md */,
