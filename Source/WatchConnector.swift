@@ -298,6 +298,13 @@ public class WatchConnector: NSObject {
         return self.validSession?.transferUserInfo(userInfo)
     }
     
+    #if os(iOS)
+    public func transferCurrentComplicationUserInfo(userInfo: [String: AnyObject]) -> WCSessionUserInfoTransfer? {
+        
+        return self.validSession?.transferCurrentComplicationUserInfo(userInfo)
+    }
+    #endif
+    
     deinit {
         
         self.messageBlocks.removeAll()
