@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name         = "WatchConnector"
-    s.version      = "0.2"
+    s.version      = "0.2.1"
     s.summary      = "WatchConnector is a tool for more convenient interaction between Watch and Phone."
     s.description  = "WatchConnector is a tool for more convenient interaction between Watch and Phone. Activate WCSession during the app launch. You can listen to message, send message and update context without reassinging WCSession delegate. See the README"
     s.homepage     = "https://github.com/NSSimpleApps/WatchConnector"
