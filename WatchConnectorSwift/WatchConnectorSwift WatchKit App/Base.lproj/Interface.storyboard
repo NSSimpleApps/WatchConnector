@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="10116" systemVersion="15E65" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="AgC-eL-Hgc">
+<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="10117" systemVersion="15G31" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="AgC-eL-Hgc">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="10032"/>
@@ -8,7 +8,7 @@
         <!--URLs-->
         <scene sceneID="aou-V4-d1y">
             <objects>
-                <controller title="URLs" id="AgC-eL-Hgc" customClass="InterfaceController" customModule="WatchConnectorWatch_Extension">
+                <controller title="URLs" id="AgC-eL-Hgc" customClass="InterfaceController" customModule="WatchConnectorSwift_WatchKit_Extension">
                     <items>
                         <button width="1" height="0.20000000000000001" alignment="center" title="Request" id="nd3-js-HNQ">
                             <connections>
@@ -17,7 +17,7 @@
                         </button>
                         <table alignment="center" id="XX5-WL-45E">
                             <items>
-                                <tableRow identifier="TableRowController" id="TU3-bj-zfl" customClass="TableRowController" customModule="WatchConnectorWatch_Extension">
+                                <tableRow identifier="TableRowController" id="TU3-bj-zfl" customClass="TableRowController" customModule="WatchConnectorSwift_WatchKit_Extension">
                                     <group key="rootItem" width="1" height="0.0" alignment="left" layout="vertical" id="atP-Cl-YwG">
                                         <items>
                                             <imageView width="32" height="32" alignment="center" id="gbR-bx-KI6"/>
@@ -46,7 +46,7 @@
         <!--Table Controller-->
         <scene sceneID="b96-x6-kJY">
             <objects>
-                <controller id="a6R-iM-49E" customClass="TableController" customModule="WatchConnectorWatch_Extension">
+                <controller id="a6R-iM-49E" customClass="TableController" customModule="WatchConnectorSwift_WatchKit_Extension">
                     <items>
                         <table alignment="center" hidden="YES" id="Bpp-zH-6Lu">
                             <items>
@@ -93,7 +93,7 @@
         <!--Notification Controller-->
         <scene sceneID="ZPc-GJ-vnh">
             <objects>
-                <controller id="4sK-HA-Art" customClass="NotificationController" customModule="WatchConnectorWatch" customModuleProvider="target"/>
+                <controller id="4sK-HA-Art" customClass="NotificationController" customModule="WatchConnectorSwift_WatchKit_App" customModuleProvider="target"/>
             </objects>
             <point key="canvasLocation" x="468" y="643"/>
         </scene>

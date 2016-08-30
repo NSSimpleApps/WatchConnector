@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name         = "WatchConnector"
-    s.version      = "0.2.1"
+    s.version      = "0.2.2"
     s.summary      = "WatchConnector is a tool for more convenient interaction between Watch and Phone."
     s.description  = "WatchConnector is a tool for more convenient interaction between Watch and Phone. Activate WCSession during the app launch. You can listen to message, send message and update context without reassinging WCSession delegate. See the README"
     s.homepage     = "https://github.com/NSSimpleApps/WatchConnector"
@@ -8,9 +8,13 @@ Pod::Spec.new do |s|
     s.author       = { 'NSSimpleApps, Sergey Poluyanov' => 'ns.simple.apps@gmail.com' }
     s.source       = { :git => "https://github.com/NSSimpleApps/WatchConnector.git", :tag => s.version.to_s }
     s.requires_arc = true
-    s.platform                  = :ios, '9.0'
-    s.platform                  = :watchos, '2.0'
+
+
+    s.platform                  = :ios, '9.0', :watchos, '2.0'
+
     s.ios.deployment_target     = '9.0'
     s.watchos.deployment_target     = '2.0'
     s.source_files = "Source/WatchConnector.swift"
+
 end
+

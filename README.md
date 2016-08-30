@@ -63,6 +63,10 @@ override func viewDidLoad() {
                        selector: #selector(self.sessionDidDeactivate(_:)),
                        name: WCSessionDidDeactivateNotification,
                        object: WatchConnector.shared)
+        nc.addObserver(self,
+                       selector: #selector(self.sessionActivationDidComplete(_:)),
+                       name: WCSessionActivationDidCompleteNotification,
+                       object: WatchConnector.shared)
     }
     nc.addObserver(self,
                    selector: #selector(self.didReceiveFile(_:)),
@@ -162,6 +166,17 @@ func sessionDidDeactivate(notification: NSNotification) {
     let userInfo = notification.userInfo as! [String: AnyObject]
     let reachable = userInfo[WCReachableSessionKey] as! Bool
     let rawValue = userInfo[WCSessionActivationStateKey] as! Int
+    let activationState = WCSessionActivationState(rawValue: rawValue)!
+    dispatch_async(dispatch_get_main_queue(), {
+        // update UI with stuff
+    })
+}
+@available(iOS 9.3, *)
+func sessionActivationDidComplete(notification: NSNotification) {
+    let userInfo = notification.userInfo as! [String: AnyObject]
+    let reachable = userInfo[WCReachableSessionKey] as! Bool
+    let rawValue = userInfo[WCSessionActivationStateKey] as! Int
+    let error = userInfo[NSUnderlyingErrorKey] as? NSError 
     let activationState = WCSessionActivationState(rawValue: rawValue)!
     dispatch_async(dispatch_get_main_queue(), {
         // update UI with stuff

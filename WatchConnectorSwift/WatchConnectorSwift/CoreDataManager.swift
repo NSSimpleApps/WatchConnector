@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-let DataBaseName = "WatchConnector"
+let DataBaseName = "WatchConnectorSwift"
 
 
 class CoreDataManager: NSObject {

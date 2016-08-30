@@ -26,6 +26,10 @@ public let WCReachableSessionKey = "WCReachableSessionKey"
 @available(iOS 9.3, watchOS 2.2, *)
 public let WCSessionActivationStateKey = "WCSessionActivationStateKey"
 
+@available(iOS 9.3, watchOS 2.2, *)
+public let WCSessionActivationDidCompleteNotification = "WCSessionActivationDidCompleteNotification"
+
+
 #if os(iOS)
 @available(iOS 9.0, *)
 public let WCWatchStateDidChangeNotification = "WCWatchStateDidChangeNotification"
@@ -35,7 +39,7 @@ public let WCSessionDidBecomeInactiveNotification = "WCSessionDidBecomeInactiveN
     
 @available(iOS 9.3, *)
 public let WCSessionDidDeactivateNotification = "WCSessionDidDeactivateNotification"
-
+    
 #endif
 
 @available(iOS 9.0, watchOS 2.0, *)
@@ -99,30 +103,24 @@ public class WatchConnector: NSObject {
         super.init()
     }
     
-    public private(set) var isActivated: Bool = false
-    
-    public func activateSession() -> Bool {
+    public func activateSession() {
         
-        self.isActivated = WCSession.isSupported()
-        
-        if self.isActivated {
+        if WCSession.isSupported() {
             
-            self.session = WCSession.defaultSession()
-            self.session?.delegate = self
-            self.session?.activateSession()
+            if #available(iOS 9.3, watchOS 2.2, *) {
+                
+                // self.session will be set in delegate method
+                let session = WCSession.defaultSession()
+                session.delegate = self
+                session.activateSession()
+                
+            } else {
+                
+                self.session = WCSession.defaultSession()
+                self.session?.delegate = self
+                self.session?.activateSession()
+            }
         }
-        return self.isActivated
-    }
-    
-    private var reachableSession: WCSession? {
-        
-        if let validSession = self.validSession where validSession.reachable {
-            
-            return validSession
-        }
-        NSLog("WCSession is not reachable")
-        
-        return nil
     }
     
     private var validSession: WCSession? {
@@ -152,6 +150,17 @@ public class WatchConnector: NSObject {
             return session
         }
         NSLog("WCSession is not activated")
+        
+        return nil
+    }
+    
+    private var reachableSession: WCSession? {
+        
+        if let validSession = self.validSession where validSession.reachable {
+            
+            return validSession
+        }
+        NSLog("WCSession is not reachable")
         
         return nil
     }
@@ -315,7 +324,7 @@ public class WatchConnector: NSObject {
     }
 }
 
-public extension WatchConnector { // extenstion for computed properties
+public extension WatchConnector { // extension for computed properties
     
     public var receivedApplicationContext: [String: AnyObject] {
         
@@ -379,6 +388,32 @@ public extension WatchConnector { // extenstion for computed properties
 }
 
 extension WatchConnector: WCSessionDelegate {
+    
+    @available(iOS 9.3, watchOS 2.2, *)
+    public func session(session: WCSession, activationDidCompleteWithState activationState: WCSessionActivationState, error: NSError?) {
+        
+        if session.activationState == .NotActivated {
+            
+            self.session = nil
+            
+        } else {
+            
+            self.session = session
+        }
+        
+        var userInfo: [String: AnyObject] = [WCReachableSessionKey: session.reachable,
+                                             WCSessionActivationStateKey: session.activationState.rawValue]
+        
+        if let error = error {
+            
+            userInfo[NSUnderlyingErrorKey] = error
+        }
+        
+        let nc = NSNotificationCenter.defaultCenter()
+        nc.postNotificationName(WCSessionActivationDidCompleteNotification,
+                                object: self,
+                                userInfo: userInfo)
+    }
     
     #if os(iOS)
     

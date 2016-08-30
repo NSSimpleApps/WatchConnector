@@ -16,7 +16,7 @@ extension UIAlertController {
         
         self.addTextFieldWithConfigurationHandler { (textField: UITextField) -> Void in
             
-            textField.text = "http://"
+            textField.placeholder = "example.com"
             textField.keyboardType = .URL
             textField.delegate = self
         }
@@ -41,7 +41,18 @@ extension UIAlertController: UITextFieldDelegate {
     
     public func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
         
-        self.actions.first?.enabled = NSURL(string: textField.text! + string)?.host != nil
+        let resultText: String
+        
+        if let text = textField.text where !text.isEmpty {
+            
+            resultText = (text as NSString).stringByReplacingCharactersInRange(range, withString: string)
+            
+        } else {
+            
+            resultText = string
+        }
+        
+        self.actions.first?.enabled = !resultText.isEmpty
         
         return true
     }

@@ -207,7 +207,7 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
         
         let alertController = UIAlertController(title: "Add URL") { (text: String) -> Void in
             
-            FavIconFetcher.fetchFavIconWithAddress(text, completionHandler: { (data: NSData, URLResponse: NSURLResponse?) -> Void in
+            FavIconLoader.loadFavIconWithHost(text, completionHandler: { (data: NSData, URLResponse: NSURLResponse?) -> Void in
                 
                 let managedObjectContext = self.fetchedResultsController.managedObjectContext
                 

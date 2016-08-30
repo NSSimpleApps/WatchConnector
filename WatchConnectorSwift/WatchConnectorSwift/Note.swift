@@ -12,6 +12,10 @@ import CoreData
 
 class Note: NSManagedObject {
     
+    @NSManaged var timestamp: NSDate?
+    @NSManaged var url: String?
+    @NSManaged var image: NSData?
+    
     func toDictionary() -> [String: AnyObject] {
         
         var result = [String: AnyObject]()
