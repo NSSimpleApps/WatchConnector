@@ -23,35 +23,43 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(self.watchStateDidChange(_:)),
-                                               name: WCWatchStateDidChangeNotification,
+                                               name: .WCWatchStateDidChange,
                                                object: WatchConnector.shared)
         
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(self.sessionDidBecomeInactive(_:)),
-                                               name: WCSessionDidBecomeInactiveNotification,
-                                               object: WatchConnector.shared)
+        if #available(iOS 9.3, *) {
+            NotificationCenter.default.addObserver(self,
+                                                   selector: #selector(self.sessionDidBecomeInactive(_:)),
+                                                   name: .WCSessionDidBecomeInactive,
+                                                   object: WatchConnector.shared)
+        } else {
+            
+        }
         
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(self.sessionDidDeactivate(_:)),
-                                               name: WCSessionDidDeactivateNotification,
-                                               object: WatchConnector.shared)
+        if #available(iOS 9.3, *) {
+            NotificationCenter.default.addObserver(self,
+                                                   selector: #selector(self.sessionDidDeactivate(_:)),
+                                                   name: .WCSessionDidDeactivate,
+                                                   object: WatchConnector.shared)
+        } else {
+            // Fallback on earlier versions
+        }
         
         WatchConnector.shared.activateSession()
         
         return true
     }
     
-    func watchStateDidChange(_ notification: Notification) {
+    @objc func watchStateDidChange(_ notification: Notification) {
         
         print(#function, notification)
     }
     
-    func sessionDidBecomeInactive(_ notification: Notification) {
+    @objc func sessionDidBecomeInactive(_ notification: Notification) {
         
         print(#function, notification)
     }
     
-    func sessionDidDeactivate(_ notification: Notification) {
+    @objc func sessionDidDeactivate(_ notification: Notification) {
         
         print(#function, notification)
     }

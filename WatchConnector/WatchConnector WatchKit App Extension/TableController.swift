@@ -27,7 +27,7 @@ class TableController: WKInterfaceController {
         let nc = NotificationCenter.default
         nc.addObserver(self,
                        selector: #selector(self.didReceiveFile(_:)),
-                       name: WCDidReceiveFileNotification,
+                       name: .WCDidReceiveFile,
                        object: WatchConnector.shared)
         
         WatchConnector.shared.listenToMessageBlock({ (message: WCMessageType) in
@@ -60,9 +60,9 @@ class TableController: WKInterfaceController {
             }, withIdentifier: ReloadData)
     }
     
-    func didReceiveFile(_ notification: Notification) {
+    @objc func didReceiveFile(_ notification: Notification) {
         
-        if let file = notification.userInfo?[WCSessionFileKey] as? WCSessionFile {
+        if let file = notification.userInfo?[WatchConnector.Keys.sessionFile] as? WCSessionFile {
             
             let lastPathComponent = file.fileURL.lastPathComponent
             

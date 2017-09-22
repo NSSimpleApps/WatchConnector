@@ -22,11 +22,11 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
         let nc = NotificationCenter.default
         nc.addObserver(self,
                        selector: #selector(self.managedObjectContextDidSave(_:)),
-                       name: NSNotification.Name.NSManagedObjectContextDidSave,
+                       name: .NSManagedObjectContextDidSave,
                        object: nil)
         nc.addObserver(self,
                        selector: #selector(self.didFinishFileTransfer(_:)),
-                       name: WCDidFinishFileTransferNotification,
+                       name: .WCDidFinishFileTransfer,
                        object: WatchConnector.shared)
     }
     
@@ -35,7 +35,7 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
         NotificationCenter.default.removeObserver(self)
     }
     
-    func managedObjectContextDidSave(_ notification: Notification) {
+    @objc func managedObjectContextDidSave(_ notification: Notification) {
         
         let context = notification.object as! NSManagedObjectContext
         
@@ -48,7 +48,7 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
         }
     }
     
-    func didFinishFileTransfer(_ notification: Notification) {
+    @objc func didFinishFileTransfer(_ notification: Notification) {
         
         if let error = notification.userInfo?[NSUnderlyingErrorKey] as? Error {
             

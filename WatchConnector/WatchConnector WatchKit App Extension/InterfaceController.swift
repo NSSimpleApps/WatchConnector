@@ -29,7 +29,7 @@ class InterfaceController: WKInterfaceController {
         let nc = NotificationCenter.default
         nc.addObserver(self,
                        selector: #selector(self.applicationContextDidChange(_:)),
-                       name: WCApplicationContextDidChangeNotification,
+                       name: .WCApplicationContextDidChange,
                        object: WatchConnector.shared)
         
         //WCSessionDelegate
@@ -57,7 +57,7 @@ class InterfaceController: WKInterfaceController {
         self.setTitle(title)
     }
     
-    func applicationContextDidChange(_ notification: Notification) {
+    @objc func applicationContextDidChange(_ notification: Notification) {
         
         if let context = notification.userInfo as? [String: AnyObject] {
             
