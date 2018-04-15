@@ -41,9 +41,7 @@ public extension Notification.Name {
 }
 
 public extension WatchConnector {
-    
     public struct Keys {
-        
         private init() {}
         
         @available(iOS 9.0, watchOS 2.0, *)
@@ -56,22 +54,20 @@ public extension WatchConnector {
         
         @available(iOS 9.0, watchOS 2.0, *)
         public static let sessionFileTransfer = "WCSessionFileTransferKey"
+        
+        
+        @available(iOS 9.0, watchOS 2.0, *)
+        internal static let messageIdentifier = "WCMessageIdentifierKey"
+        
+        @available(iOS 9.0, watchOS 2.0, *)
+        internal static let dataDescription = "WCDataDescriptionKey"
+        
+        @available(iOS 9.0, watchOS 2.0, *)
+        internal static let dataIdentifier = "WCDataIdentifierKey"
+        
+        @available(iOS 9.0, watchOS 2.0, *)
+        internal static let data = "WCDataKey"
     }
-}
-
-fileprivate extension WatchConnector.Keys {
-    
-    @available(iOS 9.0, watchOS 2.0, *)
-    fileprivate static let messageIdentifier = "WCMessageIdentifierKey"
-    
-    @available(iOS 9.0, watchOS 2.0, *)
-    fileprivate static let dataDescription = "WCDataDescriptionKey"
-    
-    @available(iOS 9.0, watchOS 2.0, *)
-    fileprivate static let dataIdentifier = "WCDataIdentifierKey"
-    
-    @available(iOS 9.0, watchOS 2.0, *)
-    fileprivate static let data = "WCDataKey"
 }
 
 @available(iOS 9.0, watchOS 2.0, *)
@@ -103,6 +99,7 @@ public final class WatchConnector: NSObject {
     private var replyDataBlocks: [String: WCReplyDataBlock] = [:]
     
     private let accessQueue = DispatchQueue(label: "ns.simple.apps", attributes: .concurrent)
+    private let notificationCenter = NotificationCenter()
     
     public static let shared = WatchConnector()
     
@@ -126,7 +123,18 @@ public final class WatchConnector: NSObject {
         }
     }
     
-    fileprivate var validSession: WCSession? {
+    public func addObserver(_ observer: Any, selector: Selector, name: Notification.Name) {
+        self.notificationCenter.addObserver(observer, selector: selector, name: name, object: self)
+    }
+    public func removeObserver(_ observer: Any, selector: Selector, name: Notification.Name) {
+        self.notificationCenter.removeObserver(observer, name: name, object: self)
+    }
+    
+    public func removeObserver(_ observer: Any) {
+        self.notificationCenter.removeObserver(observer)
+    }
+    
+    private var validSession: WCSession? {
         if let session = self.session {
             #if os(iOS)
                 guard session.isPaired else {
@@ -362,8 +370,8 @@ extension WatchConnector: WCSessionDelegate {
         }
         
         self.notificationCenter.post(name: .WCSessionActivationDidComplete,
-                object: self,
-                userInfo: userInfo)
+                                     object: self,
+                                     userInfo: userInfo)
     }
     
     #if os(iOS)
@@ -461,10 +469,6 @@ extension WatchConnector: WCSessionDelegate {
         } else {
             NSLog("Cannot decode messageData")
         }
-    }
-    
-    private var notificationCenter: NotificationCenter {
-        return NotificationCenter.default
     }
     
     public func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String : Any]) {
