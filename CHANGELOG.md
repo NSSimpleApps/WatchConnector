@@ -1,3 +1,6 @@
+## 1.0 (2018-04-15)
+- Bump to 1.0: Added new methods, changed internal structure.
+
 ## 0.4 (2017-09-22)
 - Bump to `Swift 4`
 
