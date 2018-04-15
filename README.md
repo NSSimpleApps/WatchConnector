@@ -19,7 +19,7 @@ end
 Don't forget to activate `WCSession`:
 ```objc
 // In AppDelegate
-func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
     WatchConnector.shared.activateSession()
     return true
 }
@@ -30,7 +30,8 @@ func applicationDidFinishLaunching() {
 }
 ```
 Since version 1.0  `WatchConnector` uses internal NotificationCenter instead of default NotificationCenter.
-Please use methods `-[WatchConnector addObserver:selector:name:]`, `-[WatchConnector removeObserver:selector:name:]`, `-[WatchConnector addObserver:]`.
+Please use these methods: `-[WatchConnector addObserver:selector:name:]`, `-[WatchConnector addObserver:]`, `-[WatchConnector addObserverForName:queue:usingBlock:]`,
+  `-[WatchConnector removeObserver:selector:name:]`.
 
 ```objc
 class SomeViewController: UIViewController { // or InterfaceController

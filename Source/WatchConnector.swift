@@ -126,10 +126,12 @@ public final class WatchConnector: NSObject {
     public func addObserver(_ observer: Any, selector: Selector, name: Notification.Name) {
         self.notificationCenter.addObserver(observer, selector: selector, name: name, object: self)
     }
+    public func addObserver(forName name: NSNotification.Name?, queue: OperationQueue?, using block: @escaping (Notification) -> Swift.Void) -> NSObjectProtocol {
+        return self.notificationCenter.addObserver(forName: name, object: self, queue: queue, using: block)
+    }
     public func removeObserver(_ observer: Any, selector: Selector, name: Notification.Name) {
         self.notificationCenter.removeObserver(observer, name: name, object: self)
     }
-    
     public func removeObserver(_ observer: Any) {
         self.notificationCenter.removeObserver(observer)
     }
