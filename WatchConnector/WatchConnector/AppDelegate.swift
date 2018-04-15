@@ -16,32 +16,41 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         
-        //WatchConnector.shared.activateSession()
-        
         CoreDataManager.shared.initWatchInteraction()
         CoreDataManager.shared.initDeleteNote()
         
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(self.watchStateDidChange(_:)),
-                                               name: .WCWatchStateDidChange,
-                                               object: WatchConnector.shared)
+        let connector = WatchConnector.shared
+        connector.addObserver(self,
+                              selector: #selector(self.handleNotification(_:)),
+                              name: .WCApplicationContextDidChange)
+        connector.addObserver(self,
+                              selector: #selector(self.handleNotification(_:)),
+                              name: .WCDidReceiveUserInfo)
+        
+        connector.addObserver(self,
+                              selector: #selector(self.handleNotification(_:)),
+                              name: .WCSessionReachabilityDidChange)
+        connector.addObserver(self,
+                              selector: #selector(self.handleNotification(_:)),
+                              name: .WCWatchStateDidChange)
+        
+        connector.addObserver(self,
+                              selector: #selector(self.handleNotification(_:)),
+                              name: .WCDidReceiveFile)
+        connector.addObserver(self,
+                              selector: #selector(self.handleNotification(_:)),
+                              name: .WCDidFinishFileTransfer)
         
         if #available(iOS 9.3, *) {
-            NotificationCenter.default.addObserver(self,
-                                                   selector: #selector(self.sessionDidBecomeInactive(_:)),
-                                                   name: .WCSessionDidBecomeInactive,
-                                                   object: WatchConnector.shared)
-        } else {
-            
-        }
-        
-        if #available(iOS 9.3, *) {
-            NotificationCenter.default.addObserver(self,
-                                                   selector: #selector(self.sessionDidDeactivate(_:)),
-                                                   name: .WCSessionDidDeactivate,
-                                                   object: WatchConnector.shared)
-        } else {
-            // Fallback on earlier versions
+            connector.addObserver(self,
+                                  selector: #selector(self.handleNotification(_:)),
+                                  name: .WCSessionActivationDidComplete)
+            connector.addObserver(self,
+                                  selector: #selector(self.handleNotification(_:)),
+                                  name: .WCSessionDidBecomeInactive)
+            connector.addObserver(self,
+                                  selector: #selector(self.handleNotification(_:)),
+                                  name: .WCSessionDidDeactivate)
         }
         
         WatchConnector.shared.activateSession()
@@ -49,23 +58,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
     
-    @objc func watchStateDidChange(_ notification: Notification) {
-        
-        print(#function, notification)
-    }
-    
-    @objc func sessionDidBecomeInactive(_ notification: Notification) {
-        
-        print(#function, notification)
-    }
-    
-    @objc func sessionDidDeactivate(_ notification: Notification) {
-        
-        print(#function, notification)
+    @objc func handleNotification(_ notification: Notification) {
+        print(notification)
+        print("============================================================")
     }
     
     func applicationWillTerminate(_ application: UIApplication) {
-        
         CoreDataManager.shared.saveContext()
     }
 }

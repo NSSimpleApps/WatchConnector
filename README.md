@@ -29,6 +29,8 @@ func applicationDidFinishLaunching() {
     WatchConnector.shared.activateSession()
 }
 ```
+Since version 1.0  `WatchConnector` uses internal NotificationCenter instead of default NotificationCenter.
+Please use methods `-[WatchConnector addObserver:selector:name:]`, `-[WatchConnector removeObserver:selector:name:]`, `-[WatchConnector addObserver:]`.
 
 ```objc
 class SomeViewController: UIViewController { // or InterfaceController
