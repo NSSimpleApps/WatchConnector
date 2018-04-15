@@ -30,209 +30,195 @@ func applicationDidFinishLaunching() {
 }
 ```
 
-Usage:
 ```objc
-class SomeViewController { // or InterfaceController
+class SomeViewController: UIViewController { // or InterfaceController
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        let connector = WatchConnector.shared
+        // broadcast notifications
+        connector.addObserver(self, selector: #selector(self.applicationContextDidChange(_:)), name: .WCApplicationContextDidChange)
+        connector.addObserver(self, selector: #selector(self.didReceiveUserInfo(_:)), name: .WCDidReceiveUserInfo)
+        connector.addObserver(self, selector: #selector(self.sessionReachabilityDidChange(_:)), name: .WCSessionReachabilityDidChange)
+        connector.addObserver(self, selector: #selector(self.watchStateDidChange(_:)), name: .WCWatchStateDidChange)
+        
+        if #available(iOS 9.3, *) {
+            connector.addObserver(self, selector: #selector(self.sessionDidBecomeInactive(_:)), name: .WCSessionDidBecomeInactive)
+            connector.addObserver(self, selector: #selector(self.sessionDidDeactivate(_:)), name: .WCSessionDidDeactivate)
+            connector.addObserver(self, selector: #selector(self.sessionActivationDidComplete(_:)), name: .WCSessionActivationDidComplete)
+        }
+        connector.addObserver(self, selector: #selector(self.didReceiveFile(_:)), name: .WCDidReceiveFile)
+        connector.addObserver(self, selector: #selector(self.didFinishFileTransfer(_:)), name: .WCDidFinishFileTransfer)
 
-override func viewDidLoad() {
-    super.viewDidLoad()
-    let nc = NotificationCenter.default
-    // broadcast notifications
-    nc.addObserver(self,
-                   selector: #selector(self.applicationContextDidChange(_:)),
-                   name: WCApplicationContextDidChangeNotification,
-                   object: WatchConnector.shared)
-    nc.addObserver(self,
-                   selector: #selector(self.didReceiveUserInfo(_:)),
-                   name: WCDidReceiveUserInfoNotification,
-                   object: WatchConnector.shared)
-    nc.addObserver(self,
-                   selector: #selector(self.sessionReachabilityDidChange(_:)),
-                   name: WCSessionReachabilityDidChangeNotification,
-                   object: WatchConnector.shared)
-    nc.addObserver(self,
-                   selector: #selector(self.watchStateDidChange(_:)),
-                   name: WCWatchStateDidChangeNotification,
-                   object: WatchConnector.shared)
-    if #available(iOS 9.3, *) {
-        nc.addObserver(self,
-                       selector: #selector(self.sessionDidBecomeInactive(_:)),
-                       name: WCSessionDidBecomeInactiveNotification,
-                       object: WatchConnector.shared)
-        nc.addObserver(self,
-                       selector: #selector(self.sessionDidDeactivate(_:)),
-                       name: WCSessionDidDeactivateNotification,
-                       object: WatchConnector.shared)
-        nc.addObserver(self,
-                       selector: #selector(self.sessionActivationDidComplete(_:)),
-                       name: WCSessionActivationDidCompleteNotification,
-                       object: WatchConnector.shared)
-    }
-    nc.addObserver(self,
-                   selector: #selector(self.didReceiveFile(_:)),
-                   name: WCDidReceiveFileNotification,
-                   object: WatchConnector.shared)
-    nc.addObserver(self,
-                   selector: #selector(self.didFinishFileTransfer(_:)),
-                   name: WCDidFinishFileTransferNotification,
-                   object: WatchConnector.shared)
+        connector.listenToMessageBlock({ [unowned self] (message: WCMessageType) in
+            //let someValue = message["SomeKey"] as! SomeType
+            DispatchQueue.main.async {
+                // update UI
+            }
+        },
+            withIdentifier: "MessageIdentifier")
+                        
+        connector.listenToReplyMessageBlock({ (message: WCMessageType) -> WCMessageType in
+            let someValue = message["SomeKey"] ?? ""
+            return ["SomeKey": someValue]
+            },
+            withIdentifier: "SomeReplyMessageIdentifier")
+            
+        connector.listenToDataBlock({ [unowned self] (data: Data, description: String?) in
+            let image = UIImage(data: data)
+            DispatchQueue.main.async {
+                self.imageView?.image = image
+                self.title = description
+            }
+            },
+            withIdentifier: "SomeDataIdentifier")
+            
+        connector.listenToReplyDataBlock({ (data: Data, description: String?) -> Data in
+            let image = UIImage(named: description!)
+            return UIImagePNGRepresentation(self.concatenateData(data, withImage: image))
+            },
+            withIdentifier: "SomeReplyDataIdentifier")
+        }
+        
+        deinit { // Don't forget to remove blocks added in -[Self viewDidLoad]
+            WatchConnector.shared.removeMessageBlock(with: "MessageIdentifier")
+            WatchConnector.shared.removeReplyMessageBlock(with: "SomeReplyMessageIdentifier")
+            WatchConnector.shared.removeDataBlock(with: "SomeDataIdentifier")
+            WatchConnector.shared.removeReplyDataBlock(with: "SomeReplyDataIdentifier")
+            WatchConnector.shared.removeObserver(self)
+        }
 
-    WatchConnector.shared.listenToMessageBlock({ [unowned self] (message: WCMessageType) in
-        let someValue = message["SomeKey"] as! SomeType
-        dispatch_async(dispatch_get_main_queue(), {
-            // update UI
-    })
-    },
-    withIdentifier: "MessageIdentifier")
-    
-    WatchConnector.shared.listenToReplyMessageBlock({ [unowned self] (message: WCMessageType) -> WCMessageType in
-        let someValue = message["SomeKey"] as! SomeType
-        return ["SomeKey": self.someFunc(someValue)]
-    },
-    withIdentifier: "SomeReplyMessageIdentifier")
-    
-    WatchConnector.shared.listenToDataBlock({ [unowned self] (data: NSData, description: String?) in
-        let image = UIImage(data: data)
-        dispatch_async(dispatch_get_main_queue(), {
-            self.imageView?.image = image
-            self.title = description
-        })
-    },
-    withIdentifier: "SomeDataIdentifier")
-
-    WatchConnector.shared.listenToReplyDataBlock({ [unowned self] (data: NSData, description: String?) -> NSData in
-        let image = UIImage(named: description!)
-        return UIImagePNGRepresentation(self.concatenateData(data, withImage: image))
-    },
-    withIdentifier: "SomeReplyDataIdentifier")
-}
-
-deinit { // Don't forget to remove blocks added in -[Self viewDidLoad]
-    WatchConnector.shared.removeMessageBlockWithIdentifier("MessageIdentifier")
-    WatchConnector.shared.removeReplyMessageBlockWithIdentifier("SomeReplyMessageIdentifier")
-    WatchConnector.shared.removeDataBlockWithIdentifier("SomeDataIdentifier")
-    WatchConnector.shared.removeReplyDataBlockWithIdentifier("SomeReplyDataIdentifier")
-    NotificationCenter.default.removeObserver(self)
-}
-
-func applicationContextDidChange(notification: NSNotification) {
-    let context = notification.userInfo as! [String: Any]
-    dispatch_async(dispatch_get_main_queue(), {
-        // update UI with context
-    })
-}
-func didReceiveUserInfo(notification: NSNotification) {
-    let userInfo = notification.userInfo as! [String: Any]
-    dispatch_async(dispatch_get_main_queue(), {
-        // update UI with user info
-    })
-}
-func sessionReachabilityDidChange(notification: NSNotification) {
-    let userInfo = notification.userInfo as! [String: AnyObject]
-    let reachable = userInfo[WCReachableSessionKey] as! Bool
-    if #available(iOS 9.3, *) {
-        let rawValue =
-        userInfo[WCSessionActivationStateKey] as! Int
-        let activationState = WCSessionActivationState(rawValue: rawValue)!
+    @objc func applicationContextDidChange(_ notification: Notification) {
+        let context = notification.userInfo as! [String: Any]
+        print(context)
+        DispatchQueue.main.async {
+            // update UI with context
+        }
     }
-    dispatch_async(dispatch_get_main_queue(), {
-        // update UI with stuff
-    })
-}
-#if os(iOS)
-func watchStateDidChange(notification: NSNotification) {
-    let userInfo = notification.userInfo as! [String: Any]
-    let reachable = userInfo[WCReachableSessionKey] as! Bool
-    if #available(iOS 9.3, *) {
-    let rawValue =
-    userInfo[WCSessionActivationStateKey] as! Int
-    let activationState = WCSessionActivationState(rawValue: rawValue)!
-    dispatch_async(dispatch_get_main_queue(), {
-        // update UI with stuff
-    })
-}
-@available(iOS 9.3, *)
-func sessionDidBecomeInactive(notification: NSNotification) {
-    let userInfo = notification.userInfo as! [String: AnyObject]
-    let reachable = userInfo[WCReachableSessionKey] as! Bool
-    let rawValue = userInfo[WCSessionActivationStateKey] as! Int
-    let activationState = WCSessionActivationState(rawValue: rawValue)!
-    dispatch_async(dispatch_get_main_queue(), {
-        // update UI with stuff
-    })
-}
-@available(iOS 9.3, *)
-func sessionDidDeactivate(notification: NSNotification) {
-    let userInfo = notification.userInfo as! [String: AnyObject]
-    let reachable = userInfo[WCReachableSessionKey] as! Bool
-    let rawValue = userInfo[WCSessionActivationStateKey] as! Int
-    let activationState = WCSessionActivationState(rawValue: rawValue)!
-    dispatch_async(dispatch_get_main_queue(), {
-        // update UI with stuff
-    })
-}
-@available(iOS 9.3, *)
-func sessionActivationDidComplete(notification: NSNotification) {
-    let userInfo = notification.userInfo as! [String: AnyObject]
-    let reachable = userInfo[WCReachableSessionKey] as! Bool
-    let rawValue = userInfo[WCSessionActivationStateKey] as! Int
-    let error = userInfo[NSUnderlyingErrorKey] as? Error 
-    let activationState = WCSessionActivationState(rawValue: rawValue)!
-    dispatch_async(dispatch_get_main_queue(), {
-        // update UI with stuff
-    })
-}
-#endif
-func didReceiveFile(notification: NSNotification) {
-    let userInfo = notification.userInfo as! [String: AnyObject]
-    let file = userInfo[WCSessionFileKey] as! WCSessionFile
-    dispatch_async(dispatch_get_main_queue(), {
-        // update UI with stuff
-    })
-}
-func didFinishFileTransfer(notification: NSNotification) {
-    let userInfo = notification.userInfo as! [String: AnyObject]
-    let fileTransfer = [WCSessionFileTransferKey] as! WCSessionFileTransfer
-    if let error = userInfo[NSUnderlyingErrorKey] as? Error {
+    @objc func didReceiveUserInfo(_ notification: Notification) {
+        let userInfo = notification.userInfo as! [String: Any]
+        print(userInfo)
+        DispatchQueue.main.async {
+            // update UI with user info
+        }
     }
-    dispatch_async(dispatch_get_main_queue(), {
-        // update UI with stuff
-    })
-}
-func sendMessages() {
-    WatchConnector.shared.sendMessage(["SomeKey": SomeValue],
-    withIdentifier: "MessageIdentifier") { [weak self] (error: Error) in
-    dispatch_async(dispatch_get_main_queue(), {
-        // show alert
-    })
-    WatchConnector.shared.sendMessage(["SomeKey": SomeValue],
-    withIdentifier: "SomeIdentifier",
-    replyBlock: { [weak self] (message: WCMessageType) in
-        // do something with reply message
-        dispatch_async(dispatch_get_main_queue(), {
-        // update UI with stuff
-        })
-    }) { [weak self] (error: Error) in
-        // show alert
-    }
-}
-func sendData() {
-    WatchConnector.shared.sendData(someData,
-    withIdentifier: "DataIdentifier",
-    description: "SomeDescription") { [weak self] (error: Error) in
-        // show alert
-    }
-    WatchConnector.shared.sendData(someData,
-    withIdentifier: "DataIndentifier",
-    description: "SomeDescription",
-    replyBlock: { [weak self] (data: NSData, description: String?) in
-        // do something with data and description
-        dispatch_async(dispatch_get_main_queue(), {
+    @objc func sessionReachabilityDidChange(_ notification: Notification) {
+        let userInfo = notification.userInfo as! [String: Any]
+        let reachable = userInfo[WatchConnector.Keys.sessionReachabilityState] as! Bool
+        if #available(iOS 9.3, *) {
+            let activationState = userInfo[WatchConnector.Keys.sessionActivationState] as! WCSessionActivationState
+            print("activationState =", activationState)
+        }
+        DispatchQueue.main.async {
             // update UI with stuff
-        })
-    }) { [weak self] (error: Error) in
-        // show alert
+        }
+        print("reachable =", reachable)
     }
+    #if os(iOS)
+    @objc func watchStateDidChange(_ notification: Notification) {
+        let userInfo = notification.userInfo as! [String: Any]
+        let reachable = userInfo[WatchConnector.Keys.sessionReachabilityState] as! Bool
+        if #available(iOS 9.3, *) {
+            let activationState = userInfo[WatchConnector.Keys.sessionActivationState] as! WCSessionActivationState
+            print("activationState =", activationState)
+            DispatchQueue.main.async {
+                // update UI with stuff
+            }
+        }
+        print("reachable =", reachable)
+    }
+    @objc @available(iOS 9.3, *)
+    func sessionDidBecomeInactive(_ notification: Notification) {
+        let userInfo = notification.userInfo as! [String: Any]
+        let reachable = userInfo[WatchConnector.Keys.sessionReachabilityState] as! Bool
+        let activationState = userInfo[WatchConnector.Keys.sessionActivationState] as! WCSessionActivationState
+        print("activationState =", activationState)
+        print("reachable =", reachable)
+        DispatchQueue.main.async {
+            // update UI with stuff
+        }
+    }
+    @objc @available(iOS 9.3, *)
+    func sessionDidDeactivate(_ notification: Notification) {
+        let userInfo = notification.userInfo as! [String: Any]
+        let reachable = userInfo[WatchConnector.Keys.sessionReachabilityState] as! Bool
+        let activationState = userInfo[WatchConnector.Keys.sessionActivationState] as! WCSessionActivationState
+        print("activationState =", activationState)
+        print("reachable =", reachable)
+        DispatchQueue.main.async {
+            // update UI with stuff
+        }
+    }
+    @objc @available(iOS 9.3, *)
+    func sessionActivationDidComplete(_ notification: Notification) {
+        let userInfo = notification.userInfo as! [String: Any]
+        let reachable = userInfo[WatchConnector.Keys.sessionReachabilityState] as! Bool
+        let activationState = userInfo[WatchConnector.Keys.sessionActivationState] as! WCSessionActivationState
+        print("activationState =", activationState)
+        print("reachable =", reachable)
+        if let error = userInfo[NSUnderlyingErrorKey] as? Error {
+            print("error =", error)
+        }
+        DispatchQueue.main.async {
+            // update UI with stuff
+        }
+    }
+    #endif
+    @objc func didReceiveFile(_ notification: Notification) {
+        let userInfo = notification.userInfo as! [String: Any]
+        let file = userInfo[WatchConnector.Keys.sessionFile] as! WCSessionFile
+        print("file =", file)
+        DispatchQueue.main.async {
+            // update UI with stuff
+        }
+    }
+    @objc func didFinishFileTransfer(_ notification: Notification) {
+        let userInfo = notification.userInfo as! [String: Any]
+        let fileTransfer = userInfo[WatchConnector.Keys.sessionFileTransfer] as! WCSessionFileTransfer
+        print("fileTransfer =", fileTransfer)
+        if let error = userInfo[NSUnderlyingErrorKey] as? Error {
+            print("error =", error)
+        }
+        DispatchQueue.main.async {
+            // update UI with stuff
+        }
+    }
+    func sendMessages() {
+        WatchConnector.shared.sendMessage(["SomeKey": "SomeValue"],
+                                          withIdentifier: "MessageIdentifier",
+                                          errorBlock: { (error: Error) in
+                                          DispatchQueue.main.async {
+                                            // show alert
+                                          }
+                                          WatchConnector.shared.sendMessage(["SomeKey": "SomeValue"],
+                                                                            withIdentifier: "SomeIdentifier",
+                                                                            replyBlock: { (message: WCMessageType) in
+                                                                            // do something with reply message
+                                                                            DispatchQueue.main.async {
+                                                                                // update UI with stuff
+                                                                            }
+                                            }, errorBlock: { (error: Error) in
+                                                // show alert
+                                            })
+    })
+    func sendData() {
+        let someData = Data()
+        WatchConnector.shared.sendData(someData,
+                                       withIdentifier: "DataIdentifier",
+                                       description: "SomeDescription",
+                                       errorBlock: { (error: Error) in
+                                        // show alert
+        })
+        WatchConnector.shared.sendData(someData,
+                                       withIdentifier: "DataIndentifier",
+                                       description: "SomeDescription",
+                                       replyBlock: { (data: Data, description: String?) in
+                                        // do something with data and description
+                                        DispatchQueue.main.async {
+                                            // update UI with stuff
+                                        }
+        }, errorBlock: { (error: Error) in
+            // show alert
+        })
     }
 }
 ```

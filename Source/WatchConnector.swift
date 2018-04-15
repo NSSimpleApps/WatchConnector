@@ -45,7 +45,7 @@ public extension WatchConnector {
         private init() {}
         
         @available(iOS 9.0, watchOS 2.0, *)
-        public static let reachableSession = "WCReachableSessionKey"
+        public static let sessionReachabilityState = "WCReachableSessionStateKey"
         @available(iOS 9.3, watchOS 2.2, *)
         public static let sessionActivationState = "WCSessionActivationStateKey"
         
@@ -362,8 +362,8 @@ extension WatchConnector: WCSessionDelegate {
             self.session = session
         }
         
-        var userInfo: [String: Any] = [Keys.reachableSession: session.isReachable,
-                                       Keys.sessionActivationState: session.activationState]
+        var userInfo: [String: Any] = [Keys.sessionReachabilityState: session.isReachable,
+                                       Keys.sessionActivationState: activationState]
         
         if let error = error {
             userInfo[NSUnderlyingErrorKey] = error
@@ -376,7 +376,7 @@ extension WatchConnector: WCSessionDelegate {
     
     #if os(iOS)
     public func sessionWatchStateDidChange(_ session: WCSession) {
-        var userInfo: [String: Any] = [Keys.reachableSession: session.isReachable]
+        var userInfo: [String: Any] = [Keys.sessionReachabilityState: session.isReachable]
     
         if #available(iOS 9.3, *) {
             userInfo[Keys.sessionActivationState] = session.activationState
@@ -389,7 +389,7 @@ extension WatchConnector: WCSessionDelegate {
     
     @available(iOS 9.3, *)
     public func sessionDidBecomeInactive(_ session: WCSession) {
-        let userInfo: [String: Any] = [Keys.reachableSession: session.isReachable,
+        let userInfo: [String: Any] = [Keys.sessionReachabilityState: session.isReachable,
                                        Keys.sessionActivationState: session.activationState]
     
         self.notificationCenter.post(name: .WCSessionDidBecomeInactive,
@@ -399,7 +399,7 @@ extension WatchConnector: WCSessionDelegate {
     
     @available(iOS 9.3, *)
     public func sessionDidDeactivate(_ session: WCSession) {
-        let userInfo: [String: Any] = [Keys.reachableSession: session.isReachable,
+        let userInfo: [String: Any] = [Keys.sessionReachabilityState: session.isReachable,
                                        Keys.sessionActivationState: session.activationState]
     
         self.notificationCenter.post(name: .WCSessionDidBecomeInactive,
@@ -409,7 +409,7 @@ extension WatchConnector: WCSessionDelegate {
     #endif
     
     public func sessionReachabilityDidChange(_ session: WCSession) {
-        var userInfo: [String: Any] = [Keys.reachableSession: session.isReachable]
+        var userInfo: [String: Any] = [Keys.sessionReachabilityState: session.isReachable]
         
         if #available(iOS 9.3, watchOS 2.2, *) {
             userInfo[Keys.sessionActivationState] = session.activationState
