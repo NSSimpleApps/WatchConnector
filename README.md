@@ -112,17 +112,17 @@ deinit { // Don't forget to remove blocks added in -[Self viewDidLoad]
     WatchConnector.shared.removeReplyMessageBlockWithIdentifier("SomeReplyMessageIdentifier")
     WatchConnector.shared.removeDataBlockWithIdentifier("SomeDataIdentifier")
     WatchConnector.shared.removeReplyDataBlockWithIdentifier("SomeReplyDataIdentifier")
-    NSNotificationCenter.defaultCenter().remobeObserver(self)
+    NotificationCenter.default.removeObserver(self)
 }
 
 func applicationContextDidChange(notification: NSNotification) {
-    let context = notification.userInfo as! [String: AnyObject]
+    let context = notification.userInfo as! [String: Any]
     dispatch_async(dispatch_get_main_queue(), {
         // update UI with context
     })
 }
 func didReceiveUserInfo(notification: NSNotification) {
-    let userInfo = notification.userInfo as! [String: AnyObject]
+    let userInfo = notification.userInfo as! [String: Any]
     dispatch_async(dispatch_get_main_queue(), {
         // update UI with user info
     })
@@ -141,7 +141,7 @@ func sessionReachabilityDidChange(notification: NSNotification) {
 }
 #if os(iOS)
 func watchStateDidChange(notification: NSNotification) {
-    let userInfo = notification.userInfo as! [String: AnyObject]
+    let userInfo = notification.userInfo as! [String: Any]
     let reachable = userInfo[WCReachableSessionKey] as! Bool
     if #available(iOS 9.3, *) {
     let rawValue =
@@ -176,7 +176,7 @@ func sessionActivationDidComplete(notification: NSNotification) {
     let userInfo = notification.userInfo as! [String: AnyObject]
     let reachable = userInfo[WCReachableSessionKey] as! Bool
     let rawValue = userInfo[WCSessionActivationStateKey] as! Int
-    let error = userInfo[NSUnderlyingErrorKey] as? NSError 
+    let error = userInfo[NSUnderlyingErrorKey] as? Error 
     let activationState = WCSessionActivationState(rawValue: rawValue)!
     dispatch_async(dispatch_get_main_queue(), {
         // update UI with stuff
@@ -193,7 +193,7 @@ func didReceiveFile(notification: NSNotification) {
 func didFinishFileTransfer(notification: NSNotification) {
     let userInfo = notification.userInfo as! [String: AnyObject]
     let fileTransfer = [WCSessionFileTransferKey] as! WCSessionFileTransfer
-    if let error = userInfo[NSUnderlyingErrorKey] as? NSError {
+    if let error = userInfo[NSUnderlyingErrorKey] as? Error {
     }
     dispatch_async(dispatch_get_main_queue(), {
         // update UI with stuff
@@ -201,7 +201,7 @@ func didFinishFileTransfer(notification: NSNotification) {
 }
 func sendMessages() {
     WatchConnector.shared.sendMessage(["SomeKey": SomeValue],
-    withIdentifier: "MessageIdentifier") { [weak self] (error: NSError) in
+    withIdentifier: "MessageIdentifier") { [weak self] (error: Error) in
     dispatch_async(dispatch_get_main_queue(), {
         // show alert
     })
@@ -212,14 +212,14 @@ func sendMessages() {
         dispatch_async(dispatch_get_main_queue(), {
         // update UI with stuff
         })
-    }) { [weak self] (error: NSError) in
+    }) { [weak self] (error: Error) in
         // show alert
     }
 }
 func sendData() {
     WatchConnector.shared.sendData(someData,
     withIdentifier: "DataIdentifier",
-    description: "SomeDescription") { [weak self] (error: NSError) in
+    description: "SomeDescription") { [weak self] (error: Error) in
         // show alert
     }
     WatchConnector.shared.sendData(someData,
@@ -230,7 +230,7 @@ func sendData() {
         dispatch_async(dispatch_get_main_queue(), {
             // update UI with stuff
         })
-    }) { [weak self] (error: NSError) in
+    }) { [weak self] (error: Error) in
         // show alert
     }
     }
