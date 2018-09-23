@@ -1,3 +1,6 @@
+## 1.1 (2018-09-23)
+- Bump to swift42
+
 ## 1.0 (2018-04-15)
 - Bump to 1.0: Added new methods, changed internal structure.
 

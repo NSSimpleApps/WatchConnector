@@ -15,7 +15,7 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
         super.viewDidLoad()
         
         self.tableView.estimatedRowHeight = 80.0
-        self.tableView.rowHeight = UITableViewAutomaticDimension
+        self.tableView.rowHeight = UITableView.automaticDimension
         
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(self.managedObjectContextDidSave(_:)),
@@ -84,7 +84,7 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
         return true
     }
     
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             let context = self.fetchedResultsController.managedObjectContext
             context.delete(self.fetchedResultsController.object(at: indexPath))
@@ -186,7 +186,7 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
                 do {
                     try managedObjectContext.save()
                     
-                } catch let error as NSError {
+                } catch {
                     print(error)
                 }
             })
