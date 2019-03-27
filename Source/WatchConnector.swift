@@ -12,36 +12,36 @@ import WatchConnectivity
 public extension Notification.Name {
     
     @available(iOS 9.0, watchOS 2.0, *)
-    public static let WCApplicationContextDidChange = Notification.Name("WCApplicationContextDidChangeNotification")
+    static let WCApplicationContextDidChange = Notification.Name("WCApplicationContextDidChangeNotification")
     @available(iOS 9.0, watchOS 2.0, *)
-    public static let WCDidReceiveUserInfo = Notification.Name("WCDidReceiveUserInfoNotification")
+    static let WCDidReceiveUserInfo = Notification.Name("WCDidReceiveUserInfoNotification")
     
     @available(iOS 9.3, watchOS 2.2, *)
-    public static let WCSessionActivationDidComplete = Notification.Name("WCSessionActivationDidCompleteNotification")
+    static let WCSessionActivationDidComplete = Notification.Name("WCSessionActivationDidCompleteNotification")
     
     @available(iOS 9.0, watchOS 2.0, *)
-    public static let WCSessionReachabilityDidChange = Notification.Name("WCSessionReachabilityDidChangeNotification")
+    static let WCSessionReachabilityDidChange = Notification.Name("WCSessionReachabilityDidChangeNotification")
     
     #if os(iOS)
     @available(iOS 9.0, *)
-    public static let WCWatchStateDidChange = Notification.Name("WCWatchStateDidChangeNotification")
+    static let WCWatchStateDidChange = Notification.Name("WCWatchStateDidChangeNotification")
     
     @available(iOS 9.3, *)
-    public static let WCSessionDidBecomeInactive = Notification.Name("WCSessionDidBecomeInactiveNotification")
+    static let WCSessionDidBecomeInactive = Notification.Name("WCSessionDidBecomeInactiveNotification")
     
     @available(iOS 9.3, *)
-    public static let WCSessionDidDeactivate = Notification.Name("WCSessionDidDeactivateNotification")
+    static let WCSessionDidDeactivate = Notification.Name("WCSessionDidDeactivateNotification")
     #endif
     
     @available(iOS 9.0, watchOS 2.0, *)
-    public static let WCDidReceiveFile = Notification.Name("WCDidReceiveFileNotification")
+    static let WCDidReceiveFile = Notification.Name("WCDidReceiveFileNotification")
     
     @available(iOS 9.0, watchOS 2.0, *)
-    public static let WCDidFinishFileTransfer = Notification.Name("WCDidFinishFileTransferNotification")
+    static let WCDidFinishFileTransfer = Notification.Name("WCDidFinishFileTransferNotification")
 }
 
 public extension WatchConnector {
-    public struct Keys {
+    struct Keys {
         private init() {}
         
         @available(iOS 9.0, watchOS 2.0, *)
@@ -293,20 +293,20 @@ public final class WatchConnector: NSObject {
 
 public extension WatchConnector { // extension for computed properties
     
-    public var receivedApplicationContext: [String: Any] {
+    var receivedApplicationContext: [String: Any] {
         return self.validSession?.receivedApplicationContext ?? [:]
     }
     
-    public var applicationContext: [String: Any] {
+    var applicationContext: [String: Any] {
         return self.validSession?.applicationContext ?? [:]
     }
     
-    public var isReachable: Bool {
+    var isReachable: Bool {
         return self.reachableSession != nil
     }
     
     #if os(watchOS)
-    public var iOSDeviceNeedsUnlockAfterRebootForReachability: Bool {
+    var iOSDeviceNeedsUnlockAfterRebootForReachability: Bool {
         return self.validSession?.iOSDeviceNeedsUnlockAfterRebootForReachability ?? true
     }
     #endif
@@ -334,21 +334,21 @@ public extension WatchConnector { // extension for computed properties
     }
     #endif
     
-    public var outstandingFileTransfers: [WCSessionFileTransfer] {
+    var outstandingFileTransfers: [WCSessionFileTransfer] {
         return self.validSession?.outstandingFileTransfers ?? []
     }
     
-    public var outstandingUserInfoTransfers: [WCSessionUserInfoTransfer] {
+    var outstandingUserInfoTransfers: [WCSessionUserInfoTransfer] {
         return self.validSession?.outstandingUserInfoTransfers ?? []
     }
     
     @available(iOS 9.3, watchOS 2.2, *)
-    public var activationState: WCSessionActivationState {
+    var activationState: WCSessionActivationState {
         return self.validSession?.activationState ?? .notActivated
     }
     
     @available(iOS 10.0, watchOS 3.0, *)
-    public var hasContentPending: Bool {
+    var hasContentPending: Bool {
         return self.validSession?.hasContentPending ?? false
     }
 }

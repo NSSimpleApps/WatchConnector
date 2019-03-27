@@ -137,28 +137,30 @@ class TableViewController: UITableViewController, NSFetchedResultsControllerDele
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
         switch type {
         case .insert:
-            self.tableView.insertSections(IndexSet(integer: sectionIndex), with: .fade)
+            self.tableView.insertSections([sectionIndex], with: .fade)
         case .delete:
-            self.tableView.deleteSections(IndexSet(integer: sectionIndex), with: .fade)
+            self.tableView.deleteSections([sectionIndex], with: .fade)
         default:
             return
         }
     }
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-        switch type {
-        case .insert:
-            self.tableView.insertRows(at: [newIndexPath!], with: .fade)
+        switch (type, indexPath, newIndexPath) {
+        case (.insert, _, let new?):
+            self.tableView.insertRows(at: [new], with: .fade)
             
-        case .delete:
-            self.tableView.deleteRows(at: [indexPath!], with: .fade)
+        case (.delete, let ip?, _):
+            self.tableView.deleteRows(at: [ip], with: .fade)
             
-        case .update:
-            self.tableView.reloadRows(at: [indexPath!], with: .automatic)
+        case (.update, let ip?, _):
+            self.tableView.reloadRows(at: [ip], with: .automatic)
             
-        case .move:
-            self.tableView.deleteRows(at: [indexPath!], with: .fade)
-            self.tableView.insertRows(at: [newIndexPath!], with: .fade)
+        case (.move, let ip?, let new?):
+            self.tableView.deleteRows(at: [ip], with: .fade)
+            self.tableView.insertRows(at: [new], with: .fade)
+        default:
+            break
         }
     }
     
