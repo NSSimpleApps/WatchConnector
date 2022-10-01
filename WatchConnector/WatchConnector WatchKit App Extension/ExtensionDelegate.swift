@@ -30,11 +30,9 @@ class ExtensionDelegate: NSObject, WKExtensionDelegate {
                               selector: #selector(self.handleConnectorNotification(_:)),
                               name: .WCDidFinishFileTransfer)
         
-        if #available(watchOSApplicationExtension 2.2, *) {
-            connector.addObserver(self,
-                                  selector: #selector(self.handleConnectorNotification(_:)),
-                                  name: .WCSessionActivationDidComplete)
-        }
+        connector.addObserver(self,
+                              selector: #selector(self.handleConnectorNotification(_:)),
+                              name: .WCSessionActivationDidComplete)
         
         WatchConnector.shared.activateSession()
     }

@@ -3,7 +3,7 @@ WatchConnector is a tool for more convenient interaction between Watch and Phone
 
 ![Alt text](https://github.com/NSSimpleApps/WatchConnector/blob/master/WatchConnector.gif)
 
-Minimal deployment targets: `iOS 9.0`, `watchOS 2.0`
+Minimal deployment targets: `iOS 11.0`, `watchOS 4.0`
 
 Installation guide: place this into `Podfile`
 ```
@@ -44,11 +44,10 @@ class SomeViewController: UIViewController { // or InterfaceController
         connector.addObserver(self, selector: #selector(self.sessionReachabilityDidChange(_:)), name: .WCSessionReachabilityDidChange)
         connector.addObserver(self, selector: #selector(self.watchStateDidChange(_:)), name: .WCWatchStateDidChange)
         
-        if #available(iOS 9.3, *) {
-            connector.addObserver(self, selector: #selector(self.sessionDidBecomeInactive(_:)), name: .WCSessionDidBecomeInactive)
-            connector.addObserver(self, selector: #selector(self.sessionDidDeactivate(_:)), name: .WCSessionDidDeactivate)
-            connector.addObserver(self, selector: #selector(self.sessionActivationDidComplete(_:)), name: .WCSessionActivationDidComplete)
-        }
+        connector.addObserver(self, selector: #selector(self.sessionDidBecomeInactive(_:)), name: .WCSessionDidBecomeInactive)
+        connector.addObserver(self, selector: #selector(self.sessionDidDeactivate(_:)), name: .WCSessionDidDeactivate)
+        connector.addObserver(self, selector: #selector(self.sessionActivationDidComplete(_:)), name: .WCSessionActivationDidComplete)
+            
         connector.addObserver(self, selector: #selector(self.didReceiveFile(_:)), name: .WCDidReceiveFile)
         connector.addObserver(self, selector: #selector(self.didFinishFileTransfer(_:)), name: .WCDidFinishFileTransfer)
 
@@ -107,10 +106,9 @@ class SomeViewController: UIViewController { // or InterfaceController
     @objc func sessionReachabilityDidChange(_ notification: Notification) {
         let userInfo = notification.userInfo as! [String: Any]
         let reachable = userInfo[WatchConnector.Keys.sessionReachabilityState] as! Bool
-        if #available(iOS 9.3, *) {
-            let activationState = userInfo[WatchConnector.Keys.sessionActivationState] as! WCSessionActivationState
-            print("activationState =", activationState)
-        }
+        let activationState = userInfo[WatchConnector.Keys.sessionActivationState] as! WCSessionActivationState
+        print("activationState =", activationState)
+        
         DispatchQueue.main.async {
             // update UI with stuff
         }
@@ -120,16 +118,14 @@ class SomeViewController: UIViewController { // or InterfaceController
     @objc func watchStateDidChange(_ notification: Notification) {
         let userInfo = notification.userInfo as! [String: Any]
         let reachable = userInfo[WatchConnector.Keys.sessionReachabilityState] as! Bool
-        if #available(iOS 9.3, *) {
-            let activationState = userInfo[WatchConnector.Keys.sessionActivationState] as! WCSessionActivationState
-            print("activationState =", activationState)
-            DispatchQueue.main.async {
-                // update UI with stuff
-            }
+        let activationState = userInfo[WatchConnector.Keys.sessionActivationState] as! WCSessionActivationState
+        print("activationState =", activationState)
+        DispatchQueue.main.async {
+            // update UI with stuff
         }
         print("reachable =", reachable)
     }
-    @objc @available(iOS 9.3, *)
+    @objc
     func sessionDidBecomeInactive(_ notification: Notification) {
         let userInfo = notification.userInfo as! [String: Any]
         let reachable = userInfo[WatchConnector.Keys.sessionReachabilityState] as! Bool
@@ -140,7 +136,7 @@ class SomeViewController: UIViewController { // or InterfaceController
             // update UI with stuff
         }
     }
-    @objc @available(iOS 9.3, *)
+    @objc
     func sessionDidDeactivate(_ notification: Notification) {
         let userInfo = notification.userInfo as! [String: Any]
         let reachable = userInfo[WatchConnector.Keys.sessionReachabilityState] as! Bool
@@ -151,7 +147,7 @@ class SomeViewController: UIViewController { // or InterfaceController
             // update UI with stuff
         }
     }
-    @objc @available(iOS 9.3, *)
+    @objc
     func sessionActivationDidComplete(_ notification: Notification) {
         let userInfo = notification.userInfo as! [String: Any]
         let reachable = userInfo[WatchConnector.Keys.sessionReachabilityState] as! Bool

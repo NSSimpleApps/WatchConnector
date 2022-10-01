@@ -11,9 +11,7 @@ import CoreData
 
 
 extension CoreDataManager { // for watch stuff
-    
     func migrate(to newStoreURL: URL) throws {
-        
         let currentStore = self.persistentStoreCoordinator.persistentStores.last!
         
         try self.persistentStoreCoordinator.remove(currentStore)

@@ -11,7 +11,6 @@ import CoreData
 
 
 public class Note: NSManagedObject {
-    
     @nonobjc public class func fetchRequest() -> NSFetchRequest<Note> {
         return NSFetchRequest<Note>(entityName: "Note");
     }
@@ -21,16 +20,13 @@ public class Note: NSManagedObject {
     @NSManaged public var image: Data?
     
     func toDictionary() -> [String: Any] {
-        
         var result = [String: Any]()
         
         if let url = self.url {
-            
             result["url"] = url
         }
         
         if let image = self.image {
-            
             result["image"] = image
         }
         return result

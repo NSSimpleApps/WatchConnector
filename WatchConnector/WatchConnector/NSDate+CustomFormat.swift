@@ -9,9 +9,7 @@
 import Foundation
 
 extension Date {
-    
     var customFormat: String {
-        
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMM dd, yyyy HH:mm"
         

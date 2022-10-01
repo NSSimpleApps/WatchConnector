@@ -13,21 +13,14 @@ let DataBaseName = "WatchConnector"
 
 
 class CoreDataManager: NSObject {
-    
     lazy var coreDataDirectory: URL = {
-        
         let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).last!.appendingPathComponent(DataBaseName)
-        
         let fm = FileManager.default
         
         if !fm.fileExists(atPath: url.path) {
-            
             do {
-                
                 try fm.createDirectory(at: url, withIntermediateDirectories: false, attributes: nil)
-                
             } catch let error as NSError {
-                
                 print(error)
                 abort()
             }
@@ -36,27 +29,21 @@ class CoreDataManager: NSObject {
     }()
     
     var defaultPersistentStoreURL: URL {
-        
         return self.coreDataDirectory.appendingPathComponent(String(format: "%@.sqlite", DataBaseName))
     }
     
     lazy var managedObjectModel: NSManagedObjectModel = {
-        
         let modelURL = Bundle.main.url(forResource: DataBaseName, withExtension: "momd")!
         
         return NSManagedObjectModel(contentsOf: modelURL)!
     }()
     
     lazy var persistentStoreCoordinator: NSPersistentStoreCoordinator = {
-        
         let coordinator = NSPersistentStoreCoordinator(managedObjectModel: self.managedObjectModel)
-        
         var failureReason = "There was an error creating or loading the application's saved data."
         
         do {
-            
             try coordinator.addPersistentStore(ofType: NSSQLiteStoreType, configurationName: nil, at: self.defaultPersistentStoreURL, options: nil)
-            
         } catch let error as NSError {
             // Report any error we got.
             var dict = [String: Any]()
@@ -74,11 +61,8 @@ class CoreDataManager: NSObject {
     }()
     
     lazy var managedObjectContext: NSManagedObjectContext = {
-        
-        let coordinator = self.persistentStoreCoordinator
-        
         var managedObjectContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
-        managedObjectContext.persistentStoreCoordinator = coordinator
+        managedObjectContext.persistentStoreCoordinator = self.persistentStoreCoordinator
         
         return managedObjectContext
     }()
@@ -86,22 +70,15 @@ class CoreDataManager: NSObject {
     static let shared = CoreDataManager()
     
     private override init() {
-        
         super.init()
     }
     
     func saveContext () {
-        
         if managedObjectContext.hasChanges {
-            
             do {
-                
                 try managedObjectContext.save()
-                
             } catch let error as NSError {
-                
                 NSLog("Unresolved error \(error), \(error.userInfo)")
-                
                 abort()
             }
         }

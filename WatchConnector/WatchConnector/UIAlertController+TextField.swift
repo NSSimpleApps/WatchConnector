@@ -9,45 +9,32 @@
 import UIKit
 
 extension UIAlertController {
-    
     convenience init(title: String, completion: ((String) -> Void)?) {
-        
         self.init(title: title, message: nil, preferredStyle: .alert)
         self.addTextField { (textField: UITextField) in
-            
             textField.placeholder = "example.com"
             textField.keyboardType = .URL
             textField.delegate = self
         }
         
-        let OKAlertAction = UIAlertAction(title: "OK", style: .default) { (alertAction: UIAlertAction) -> Void in
-            
+        let okAlertAction = UIAlertAction(title: "OK", style: .default) { (alertAction: UIAlertAction) -> Void in
             if let text = self.textFields?.first?.text {
-                
                 completion?(text)
             }
         }
-        OKAlertAction.isEnabled = false
+        okAlertAction.isEnabled = false
         
-        let cancelAlertAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-        
-        self.addAction(OKAlertAction)
-        self.addAction(cancelAlertAction)
+        self.addAction(okAlertAction)
+        self.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
     }
 }
 
 extension UIAlertController: UITextFieldDelegate {
-    
     public func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        
         let resultText: String
-        
         if let text = textField.text, !text.isEmpty {
-            
             resultText = (text as NSString).replacingCharacters(in: range, with: string)
-            
         } else {
-            
             resultText = string
         }
         

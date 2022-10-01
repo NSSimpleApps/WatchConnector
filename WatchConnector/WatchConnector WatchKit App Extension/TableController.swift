@@ -34,13 +34,12 @@ class TableController: WKInterfaceController {
                 let fm = FileManager.default
                 
                 do {
-                    let newStoreURL = try fm.contentsOfDirectory(at: cdm.coreDataDirectory, includingPropertiesForKeys: nil, options: .skipsSubdirectoryDescendants).first(where: { (url: URL) -> Bool in
+                    if let newStoreURL = try fm.contentsOfDirectory(at: cdm.coreDataDirectory, includingPropertiesForKeys: nil, options: .skipsSubdirectoryDescendants).first(where: { (url: URL) -> Bool in
                         url.pathExtension == "sqlite"
-                    })!
-                    
-                    try cdm.migrate(to: newStoreURL)
-                    try self.reloadData()
-                    
+                    }) {
+                        try cdm.migrate(to: newStoreURL)
+                        try self.reloadData()
+                    }
                 } catch let error as NSError {
                     print(error)
                 }

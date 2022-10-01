@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -22,7 +22,7 @@
 		B515EFB11D8EA8940049CB77 /* CoreDataManager+Phone.swift in Sources */ = {isa = PBXBuildFile; fileRef = B515EFAD1D8EA8940049CB77 /* CoreDataManager+Phone.swift */; };
 		B515EFBE1D8EA97B0049CB77 /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B515EFBC1D8EA97B0049CB77 /* Interface.storyboard */; };
 		B515EFC01D8EA97B0049CB77 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B515EFBF1D8EA97B0049CB77 /* Assets.xcassets */; };
-		B515EFC71D8EA97B0049CB77 /* WatchConnector WatchKit App Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = B515EFC61D8EA97B0049CB77 /* WatchConnector WatchKit App Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B515EFC71D8EA97B0049CB77 /* WatchConnector WatchKit App Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B515EFC61D8EA97B0049CB77 /* WatchConnector WatchKit App Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B515EFD41D8EA97B0049CB77 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B515EFD31D8EA97B0049CB77 /* Assets.xcassets */; };
 		B515EFD81D8EA97B0049CB77 /* WatchConnector WatchKit App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = B515EFBA1D8EA97B0049CB77 /* WatchConnector WatchKit App.app */; };
 		B515EFE31D8EA9B70049CB77 /* WatchConnector.swift in Sources */ = {isa = PBXBuildFile; fileRef = B515EFE21D8EA9B70049CB77 /* WatchConnector.swift */; };
@@ -56,15 +56,15 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		B515EFDC1D8EA97B0049CB77 /* Embed App Extensions */ = {
+		B515EFDC1D8EA97B0049CB77 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				B515EFC71D8EA97B0049CB77 /* WatchConnector WatchKit App Extension.appex in Embed App Extensions */,
+				B515EFC71D8EA97B0049CB77 /* WatchConnector WatchKit App Extension.appex in Embed Foundation Extensions */,
 			);
-			name = "Embed App Extensions";
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		B515EFE01D8EA97B0049CB77 /* Embed Watch Content */ = {
@@ -273,7 +273,7 @@
 			buildConfigurationList = B515EFDD1D8EA97B0049CB77 /* Build configuration list for PBXNativeTarget "WatchConnector WatchKit App" */;
 			buildPhases = (
 				B515EFB81D8EA97B0049CB77 /* Resources */,
-				B515EFDC1D8EA97B0049CB77 /* Embed App Extensions */,
+				B515EFDC1D8EA97B0049CB77 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
@@ -309,7 +309,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0800;
-				LastUpgradeCheck = 1200;
+				LastUpgradeCheck = 1400;
 				ORGANIZATIONNAME = NSSimpleApps;
 				TargetAttributes = {
 					B515EF851D8EA7490049CB77 = {
@@ -330,7 +330,7 @@
 				};
 			};
 			buildConfigurationList = B515EF811D8EA7480049CB77 /* Build configuration list for PBXProject "WatchConnector" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -509,7 +509,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -517,6 +517,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				WATCHOS_DEPLOYMENT_TARGET = 4.0;
 			};
 			name = Debug;
 		};
@@ -565,13 +566,15 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 4.0;
 			};
 			name = Release;
 		};
@@ -582,8 +585,10 @@
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = WatchConnector/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = NSSimpleApps.WatchConnector;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -598,8 +603,10 @@
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = WatchConnector/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = NSSimpleApps.WatchConnector;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -614,7 +621,11 @@
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = "WatchConnector WatchKit App Extension/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = NSSimpleApps.WatchConnector.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -622,7 +633,6 @@
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Debug;
 		};
@@ -633,7 +643,11 @@
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = "WatchConnector WatchKit App Extension/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = NSSimpleApps.WatchConnector.watchkitapp.watchkitextension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -641,7 +655,6 @@
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Release;
 		};
@@ -659,9 +672,8 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Debug;
 		};
@@ -679,9 +691,8 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Release;
 		};

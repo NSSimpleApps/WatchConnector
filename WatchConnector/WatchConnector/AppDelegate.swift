@@ -10,12 +10,9 @@ import UIKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
     var window: UIWindow?
 
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        
         CoreDataManager.shared.initWatchInteraction()
         CoreDataManager.shared.initDeleteNote()
         
@@ -41,17 +38,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                               selector: #selector(self.handleNotification(_:)),
                               name: .WCDidFinishFileTransfer)
         
-        if #available(iOS 9.3, *) {
-            connector.addObserver(self,
-                                  selector: #selector(self.handleNotification(_:)),
-                                  name: .WCSessionActivationDidComplete)
-            connector.addObserver(self,
-                                  selector: #selector(self.handleNotification(_:)),
-                                  name: .WCSessionDidBecomeInactive)
-            connector.addObserver(self,
-                                  selector: #selector(self.handleNotification(_:)),
-                                  name: .WCSessionDidDeactivate)
-        }
+        connector.addObserver(self,
+                              selector: #selector(self.handleNotification(_:)),
+                              name: .WCSessionActivationDidComplete)
+        connector.addObserver(self,
+                              selector: #selector(self.handleNotification(_:)),
+                              name: .WCSessionDidBecomeInactive)
+        connector.addObserver(self,
+                              selector: #selector(self.handleNotification(_:)),
+                              name: .WCSessionDidDeactivate)
         
         WatchConnector.shared.activateSession()
         

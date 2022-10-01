@@ -1,3 +1,6 @@
+## 1.4 (2022-10-01)
+- Bump to Xcode14, iOS 11, watchOS 4.
+
 ## 1.3 (2020-09-18)
 - Bump to Xcode12
 

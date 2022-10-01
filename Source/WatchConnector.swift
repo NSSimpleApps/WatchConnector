@@ -10,84 +10,59 @@ import Foundation
 import WatchConnectivity
 
 public extension Notification.Name {
+    static let WCApplicationContextDidChange = Self("WCApplicationContextDidChangeNotification")
     
-    @available(iOS 9.0, watchOS 2.0, *)
-    static let WCApplicationContextDidChange = Notification.Name("WCApplicationContextDidChangeNotification")
-    @available(iOS 9.0, watchOS 2.0, *)
-    static let WCDidReceiveUserInfo = Notification.Name("WCDidReceiveUserInfoNotification")
+    static let WCDidReceiveUserInfo = Self("WCDidReceiveUserInfoNotification")
     
-    @available(iOS 9.3, watchOS 2.2, *)
-    static let WCSessionActivationDidComplete = Notification.Name("WCSessionActivationDidCompleteNotification")
+    static let WCSessionActivationDidComplete = Self("WCSessionActivationDidCompleteNotification")
     
-    @available(iOS 9.0, watchOS 2.0, *)
-    static let WCSessionReachabilityDidChange = Notification.Name("WCSessionReachabilityDidChangeNotification")
+    static let WCSessionReachabilityDidChange = Self("WCSessionReachabilityDidChangeNotification")
     
     #if os(iOS)
-    @available(iOS 9.0, *)
-    static let WCWatchStateDidChange = Notification.Name("WCWatchStateDidChangeNotification")
+    static let WCWatchStateDidChange = Self("WCWatchStateDidChangeNotification")
     
-    @available(iOS 9.3, *)
-    static let WCSessionDidBecomeInactive = Notification.Name("WCSessionDidBecomeInactiveNotification")
+    static let WCSessionDidBecomeInactive = Self("WCSessionDidBecomeInactiveNotification")
     
-    @available(iOS 9.3, *)
-    static let WCSessionDidDeactivate = Notification.Name("WCSessionDidDeactivateNotification")
+    static let WCSessionDidDeactivate = Self("WCSessionDidDeactivateNotification")
     #endif
     
-    @available(iOS 9.0, watchOS 2.0, *)
-    static let WCDidReceiveFile = Notification.Name("WCDidReceiveFileNotification")
+    static let WCDidReceiveFile = Self("WCDidReceiveFileNotification")
     
-    @available(iOS 9.0, watchOS 2.0, *)
-    static let WCDidFinishFileTransfer = Notification.Name("WCDidFinishFileTransferNotification")
+    static let WCDidFinishFileTransfer = Self("WCDidFinishFileTransferNotification")
 }
 
 public extension WatchConnector {
     struct Keys {
         private init() {}
         
-        @available(iOS 9.0, watchOS 2.0, *)
         public static let sessionReachabilityState = "WCReachableSessionStateKey"
-        @available(iOS 9.3, watchOS 2.2, *)
         public static let sessionActivationState = "WCSessionActivationStateKey"
         
-        @available(iOS 9.0, watchOS 2.0, *)
         public static let sessionFile = "WCSessionFileKey"
         
-        @available(iOS 9.0, watchOS 2.0, *)
         public static let sessionFileTransfer = "WCSessionFileTransferKey"
         
-        
-        @available(iOS 9.0, watchOS 2.0, *)
         internal static let messageIdentifier = "WCMessageIdentifierKey"
         
-        @available(iOS 9.0, watchOS 2.0, *)
         internal static let dataDescription = "WCDataDescriptionKey"
         
-        @available(iOS 9.0, watchOS 2.0, *)
         internal static let dataIdentifier = "WCDataIdentifierKey"
         
-        @available(iOS 9.0, watchOS 2.0, *)
         internal static let data = "WCDataKey"
     }
 }
 
-@available(iOS 9.0, watchOS 2.0, *)
 public typealias WCMessageType = [String : Any]
 
-@available(iOS 9.0, watchOS 2.0, *)
 public typealias WCMessageBlock = (WCMessageType) -> Void
-@available(iOS 9.0, watchOS 2.0, *)
 public typealias WCReplyMessageBlock = (WCMessageType) -> WCMessageType
 
-@available(iOS 9.0, watchOS 2.0, *)
 public typealias WCDataBlock = (Data, String?) -> Void
-@available(iOS 9.0, watchOS 2.0, *)
 public typealias WCReplyDataBlock = (Data, String?) -> Data
 
-@available(iOS 9.0, watchOS 2.0, *)
 public typealias WCErrorBlock = (Error) -> Void
 
 
-@available(iOS 9.0, watchOS 2.0, *)
 public final class WatchConnector: NSObject {
     
     private var _session: WCSession?
@@ -109,17 +84,9 @@ public final class WatchConnector: NSObject {
     
     public func activateSession() {
         if WCSession.isSupported() {
-            if #available(iOS 9.3, watchOS 2.2, *) {
-                // self.session will be set in delegate method
-                let session = WCSession.default
-                session.delegate = self
-                session.activate()
-                
-            } else {
-                self.session = WCSession.default
-                self.session?.delegate = self
-                self.session?.activate()
-            }
+            let session = WCSession.default
+            session.delegate = self
+            session.activate()
         }
     }
     
@@ -328,7 +295,6 @@ public extension WatchConnector { // extension for computed properties
         return self.validSession?.isComplicationEnabled ?? false
     }
     
-    @available(iOS 10.0, *)
     public var remainingComplicationUserInfoTransfers: Int {
         return self.validSession?.remainingComplicationUserInfoTransfers ?? 0
     }
@@ -342,20 +308,16 @@ public extension WatchConnector { // extension for computed properties
         return self.validSession?.outstandingUserInfoTransfers ?? []
     }
     
-    @available(iOS 9.3, watchOS 2.2, *)
     var activationState: WCSessionActivationState {
         return self.validSession?.activationState ?? .notActivated
     }
     
-    @available(iOS 10.0, watchOS 3.0, *)
     var hasContentPending: Bool {
         return self.validSession?.hasContentPending ?? false
     }
 }
 
 extension WatchConnector: WCSessionDelegate {
-    
-    @available(iOS 9.3, watchOS 2.2, *)
     public func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
         if activationState == .notActivated {
             self.session = nil
@@ -378,18 +340,14 @@ extension WatchConnector: WCSessionDelegate {
     
     #if os(iOS)
     public func sessionWatchStateDidChange(_ session: WCSession) {
-        var userInfo: [String: Any] = [Keys.sessionReachabilityState: session.isReachable]
-    
-        if #available(iOS 9.3, *) {
-            userInfo[Keys.sessionActivationState] = session.activationState
-        }
+        let userInfo: [String: Any] = [Keys.sessionReachabilityState: session.isReachable,
+                                       Keys.sessionActivationState: session.activationState]
     
         self.notificationCenter.post(name: .WCWatchStateDidChange,
                                      object: self,
                                      userInfo: userInfo)
     }
     
-    @available(iOS 9.3, *)
     public func sessionDidBecomeInactive(_ session: WCSession) {
         let userInfo: [String: Any] = [Keys.sessionReachabilityState: session.isReachable,
                                        Keys.sessionActivationState: session.activationState]
@@ -399,7 +357,6 @@ extension WatchConnector: WCSessionDelegate {
                                      userInfo: userInfo)
     }
     
-    @available(iOS 9.3, *)
     public func sessionDidDeactivate(_ session: WCSession) {
         let userInfo: [String: Any] = [Keys.sessionReachabilityState: session.isReachable,
                                        Keys.sessionActivationState: session.activationState]
@@ -411,15 +368,12 @@ extension WatchConnector: WCSessionDelegate {
     #endif
     
     public func sessionReachabilityDidChange(_ session: WCSession) {
-        var userInfo: [String: Any] = [Keys.sessionReachabilityState: session.isReachable]
-        
-        if #available(iOS 9.3, watchOS 2.2, *) {
-            userInfo[Keys.sessionActivationState] = session.activationState
-        }
+        let userInfo: [String: Any] = [Keys.sessionReachabilityState: session.isReachable,
+                                       Keys.sessionActivationState: session.activationState]
         
         self.notificationCenter.post(name: .WCSessionReachabilityDidChange,
-                                object: self,
-                                userInfo: userInfo)
+                                     object: self,
+                                     userInfo: userInfo)
     }
     
     public func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
